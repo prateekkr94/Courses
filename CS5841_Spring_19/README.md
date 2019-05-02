@@ -11,3 +11,7 @@ A brief outline of topics located in the files are listed below.
 - Project 1: Data Generation and Simple Classification
 - Project 2: Basic Data Generation and Manipulation
 - Project 3: Regression and Shrinkage
+- Project 4: Linear Classification
+- Project 5: Single Value Decomposition
+- Project 6: Support Vector Machines
+- Project 7: Expectation and Maximization Algorithm
