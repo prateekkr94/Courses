@@ -1,0 +1,143 @@
+---
+title: "Problem_Set_4"
+author: "Prateek Kumar"
+date: "29 September 2018"
+output:
+  word_document: default
+---
+
+I have selected the database of `India`, for years `1991`,`2001` and `2011`. The databases have been choosen under the category "Population by five year age groups", so for each of the three years we get a table with the population pyramid. Later we have their pyramid plots and the comparison of the three years.
+
+```
+India_1991 <- read_excel("India_1991.xlsx",skip = 1) # Reading the data from the excel
+India_2001 <- read_excel("India_2001.xlsx",skip = 1)
+India_2011 <- read_excel("India_2011.xlsx",skip = 1)
+```
+
+Setting the age labels
+
+```
+agelabels <- India_1991$Age
+# mcol<-color.gradient(c(0,0,0.5,1),c(0,0,0.5,1),c(1,1,0.5,1),21)
+# fcol<-color.gradient(c(1,1,0.5,1),c(0.5,0.5,0.5,1),c(0.5,0.5,0.5,1),21)
+```
+
+For the coloring here we are using the `colorspace` package
+
+```
+library("colorspace", lib.loc="~/R/win-library/3.5")
+```
+
+Setting up the colors for the male and female data for all the three databases. 
+Here I am breaking the data into quantiles and assigning color to each quantile for both the male and female percentage, so that we get an insight of population percentage distribution over the age groups.
+
+```
+# setting up the color for the year 1991
+c_m_91 <- cut(India_1991$`Percent Male`, breaks=quantile(India_1991$`Percent Male`, 
+                                                         c(0, 0.25, 0.5, 0.75, 1)))
+c_f_91 <- cut(India_1991$`Percent Female`, breaks=quantile(India_1991$`Percent Female`, 
+                                                           c(0, 0.25, 0.5, 0.75, 1)))
+
+# setting up the color for the year 2001
+c_m_01 <- cut(India_2001$`Percent Male`, breaks=quantile(India_2001$`Percent Male`,
+                                                         c(0, 0.25, 0.5, 0.75, 1)))
+c_f_01 <- cut(India_2001$`Percent Female`, breaks=quantile(India_2001$`Percent Female`,
+                                                           c(0, 0.25, 0.5, 0.75, 1)))
+
+# setting up the color for the year 2011
+c_m_11 <- cut(India_2011$`Percent Male`, breaks=quantile(India_2011$`Percent Male`,
+                                                 c(0, 0.25, 0.5, 0.75, 1)))
+c_f_11 <- cut(India_2011$`Percent Female`, breaks=quantile(India_2011$`Percent Female`,
+                                                         c(0, 0.25, 0.5, 0.75, 1)))
+```
+
+The pyramid plots for male and female percentage over the age group for the three years.
+
+```
+pyramid.plot(lx = India_1991$`Percent Male`,rx = India_1991$`Percent Female`, 
+             labels = agelabels, gap = 1, main = "Indian Population Pyramid 1991", 
+             show.values = T, lxcol=c_m_91,rxcol=c_f_91, space = 0.4,
+             top.labels=c("Male","Age","Female"), unit="Percentage", ppmar=c(4,3,4,3), labelcex = 0.8,
+             xlim = c(15,15), laxlab=c(0,2,4,6,8,10,12,14), raxlab=c(0,2,4,6,8,10,12,14),
+             add = F, ndig = 1, do.first = NULL)
+```
+
+plot1
+
+```
+pyramid.plot(lx = India_2001$`Percent Male`,rx = India_2001$`Percent Female`, 
+             labels = agelabels, gap = 1, main = "Indian Population Pyramid 2001", 
+             show.values = T, lxcol=c_m_01,rxcol=c_f_01, space = 0.4,
+             top.labels=c("Male","Age","Female"), unit="Percentage", ppmar=c(4,3,4,3), labelcex = 0.8,
+             xlim = c(15,15), laxlab=c(0,2,4,6,8,10,12,14), raxlab=c(0,2,4,6,8,10,12,14),
+             add = F, ndig = 1, do.first = NULL)
+```
+
+plot1
+
+```
+pyramid.plot(lx = India_2011$`Percent Male`,rx = India_2011$`Percent Female`, 
+             labels = agelabels, gap = 1, main = "Indian Population Pyramid 2011", 
+             show.values = T, lxcol=c_m_11,rxcol=c_f_11, space = 0.4,
+             top.labels=c("Male","Age","Female"), unit="Percentage", ppmar=c(4,3,4,3), labelcex = 0.8,
+             xlim = c(15,15), laxlab=c(0,2,4,6,8,10,12,14), raxlab=c(0,2,4,6,8,10,12,14),
+             add = F, ndig = 1, do.first = NULL)
+```
+
+plot1
+
+Diamond Plot
+
+```
+fifa <- read_excel("FIFA_18.xlsx") 
+la_liga <- read_excel("FIFA_LA_LIGA.xlsx") 
+library("userfriendlyscience", lib.loc="~/R/win-library/3.5")
+```
+header
+```
+meansDiamondPlot(fifa, 
+                 items = c('Acceleration', 'Aggression', 'Agility', 'Ball control','Finishing'),
+                 conf.level = .95, jitterWidth = .5, jitterHeight = .5,
+                 dataAlpha = 0.5, dataSize = 2,showData = T,
+                 xlab = 'Value and Means', theme = theme_light(), xbreaks = 'auto',
+                 outputFile='figure 1.png',outputWidth=15, outputHeight=15)
+```
+pl1
+```
+meansDiamondPlot(fifa, 
+                 items = c('Acceleration', 'Aggression', 'Agility', 'Ball control','Finishing'),
+                 conf.level = .95, jitterWidth = .5, jitterHeight = .5,
+                 dataAlpha = 0.5, dataSize = 2,
+                 xlab = 'Value and Means', theme = theme_light(), xbreaks = 'auto',
+                 generateColors = c('navy','gold'),
+                 outputFile='figure 2.png',outputWidth=15, outputHeight=15)
+```
+pl2
+```
+biAxisDiamondPlot(dat=fifa, 
+                  items=c('Acceleration', 'Aggression', 'Agility', 'Ball control','Finishing'),
+                  subQuestions=c('How much acceleration?', 'How much aggression?', 'How is the agility?',
+                                 'How is the ball control?','How is the finishing?'),
+                  leftAnchors=c('less', 'less','poor','poor','worse'),
+                  rightAnchors=c('more', 'more','excellent','great','outstanding'),
+                  decreasing = F, conf.level = 0.95, showData = T, dataAlpha = 1,
+                  dataColor = 'black', diamondColors = c('red','blue','green','gold','cyan'),
+                  jitterWidth = 0.5, jitterHeight = 0.3,
+                  xbreaks='auto', xLabels = NA, 
+                  xAxisLab = paste0("Value and ", round(100 * 0.95, 2),"% CIs"),
+                  drawPlot = T, baseSize = 1, dotSize = 1.5, baseFontSize = 10,
+                  theme = theme_light(),
+                  outputFile='figure 3.png',outputWidth=15, outputHeight=15);
+```
+pl3
+```
+meansComparisonDiamondPlot(la_liga,
+                           items=c('Acceleration', 'Aggression', 'Agility', 'Ball control','Finishing'),
+                           compareBy='Club', labels = NULL, conf.level = 0.95,
+                           showData = T, dataAlpha = 0.3, dataSize = 2,
+                           alpha = 0.33, jitterWidth = 0.5, jitterHeight = 0.4,
+                           xlab = 'Scores and means', ylab = NULL,
+                           theme = theme_light(), showLegend = T,
+                           lineSize = 1,xbreaks=c(0,20,40,60,80,100),
+                           outputFile='figure 4.png',outputWidth=15, outputHeight=15);
+```
