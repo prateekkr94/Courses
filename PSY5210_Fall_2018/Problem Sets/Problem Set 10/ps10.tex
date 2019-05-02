@@ -1,0 +1,355 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Problem Set 10},
+            pdfauthor={Shane T. Mueller shanem@mtu.edu},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Problem Set 10}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Shane T. Mueller
+\href{mailto:shanem@mtu.edu}{\nolinkurl{shanem@mtu.edu}}}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{November 27, 2018}
+
+
+\begin{document}
+\maketitle
+
+\texttt{This\ problem\ set\ covers\ simple\ categorical\ predictors,\ the\ link\ between\ regression\ and\ ANOVA,\ and\ post-hoc\ tests,\ and\ multi-way\ ANOVA.}
+
+\section{Categorical Predictors}\label{categorical-predictors}
+
+On each of day of one week, we sampled 100 random company stocks and
+examined their trading price. Each day a different set of stocks was
+sampled at random from the NYSE and NASDAQ published prices.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(ggplot2)}
+\NormalTok{data <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"ps10data.csv"}\NormalTok{)}
+
+\KeywordTok{head}\NormalTok{(data)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   day     sector stockprice
+## 1  Mo automotive      55.11
+## 2  Mo automotive      85.10
+## 3  Mo     health      99.67
+## 4  Mo automotive      19.79
+## 5  Mo automotive      69.68
+## 6  Mo automotive      61.97
+\end{verbatim}
+
+This is stored in a matrix. For a regression or ANOVA, we really need
+each one
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(data,}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{day,}\DataTypeTok{y=}\NormalTok{stockprice)) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{sector)) }\OperatorTok{+}\KeywordTok{theme_minimal}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{ps10_files/figure-latex/unnamed-chunk-2-1.pdf} For this
+problem, we want to determine, using a number of methods, which days
+differed from which other days. In each case, run the test, and answer
+the question in 1-2 sentences describing what you found. Use a p=.05 as
+a criterion for determining whether an effect isstatistically
+significant.
+
+\subsection{1. First use a contrast that will compare each day to
+Monday, and report which of the days had prices significantly higher
+than monday (report the test obtained directly from the coefficients of
+lm by doing summary() on the results of
+lm()).}\label{first-use-a-contrast-that-will-compare-each-day-to-monday-and-report-which-of-the-days-had-prices-significantly-higher-than-monday-report-the-test-obtained-directly-from-the-coefficients-of-lm-by-doing-summary-on-the-results-of-lm.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Question1}
+\NormalTok{day.}\DecValTok{0}\NormalTok{ <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Mo"}\NormalTok{,}\StringTok{"Tu"}\NormalTok{,}\StringTok{"We"}\NormalTok{,}\StringTok{"Th"}\NormalTok{,}\StringTok{"Fr"}\NormalTok{,}\StringTok{"Sa"}\NormalTok{,}\StringTok{"Su"}\NormalTok{)}
+\NormalTok{data}\OperatorTok{$}\NormalTok{day<-}\StringTok{ }\KeywordTok{factor}\NormalTok{(data}\OperatorTok{$}\NormalTok{day,}\DataTypeTok{levels=}\NormalTok{day.}\DecValTok{0}\NormalTok{) }\CommentTok{#add the level to months variable}
+\KeywordTok{aggregate}\NormalTok{(data}\OperatorTok{$}\NormalTok{stockprice,}\KeywordTok{list}\NormalTok{(data}\OperatorTok{$}\NormalTok{day),mean)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Group.1       x
+## 1      Mo 60.5618
+## 2      Tu 59.5182
+## 3      We 60.2386
+## 4      Th 80.7623
+## 5      Fr 81.5663
+## 6      Sa 78.4041
+## 7      Su 83.7771
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{model1 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(stockprice}\OperatorTok{~}\NormalTok{day, }\DataTypeTok{data=}\NormalTok{data)}
+\NormalTok{model1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = stockprice ~ day, data = data)
+## 
+## Coefficients:
+## (Intercept)        dayTu        dayWe        dayTh        dayFr  
+##     60.5618      -1.0436      -0.3232      20.2005      21.0045  
+##       daySa        daySu  
+##     17.8423      23.2153
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(model1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = stockprice ~ day, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -90.497 -33.876  -0.053  36.118 103.973 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  60.5618     4.2292  14.320  < 2e-16 ***
+## dayTu        -1.0436     5.9809  -0.174 0.861533    
+## dayWe        -0.3232     5.9809  -0.054 0.956920    
+## dayTh        20.2005     5.9809   3.377 0.000772 ***
+## dayFr        21.0045     5.9809   3.512 0.000474 ***
+## daySa        17.8423     5.9809   2.983 0.002953 ** 
+## daySu        23.2153     5.9809   3.882 0.000114 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 42.29 on 693 degrees of freedom
+## Multiple R-squared:  0.05869,    Adjusted R-squared:  0.05054 
+## F-statistic: 7.202 on 6 and 693 DF,  p-value: 1.808e-07
+\end{verbatim}
+
+\subsection{2. Then, use successive difference coding of the day
+variable to determine which days of the week differed significantly from
+the previous
+day.}\label{then-use-successive-difference-coding-of-the-day-variable-to-determine-which-days-of-the-week-differed-significantly-from-the-previous-day.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Question2}
+\KeywordTok{library}\NormalTok{(MASS)}
+\KeywordTok{contrasts}\NormalTok{(data}\OperatorTok{$}\NormalTok{day)<-}\KeywordTok{contr.sdif}\NormalTok{(}\KeywordTok{levels}\NormalTok{(data}\OperatorTok{$}\NormalTok{day))}
+\NormalTok{model2 <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(stockprice}\OperatorTok{~}\NormalTok{day, }\DataTypeTok{data=}\NormalTok{data)}
+\NormalTok{model2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = stockprice ~ day, data = data)
+## 
+## Coefficients:
+## (Intercept)     dayTu-Mo     dayWe-Tu     dayTh-We     dayFr-Th  
+##     72.1183      -1.0436       0.7204      20.5237       0.8040  
+##    daySa-Fr     daySu-Sa  
+##     -3.1622       5.3730
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(model2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = stockprice ~ day, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -90.497 -33.876  -0.053  36.118 103.973 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  72.1183     1.5985  45.117  < 2e-16 ***
+## dayTu-Mo     -1.0436     5.9809  -0.174 0.861533    
+## dayWe-Tu      0.7204     5.9809   0.120 0.904162    
+## dayTh-We     20.5237     5.9809   3.432 0.000636 ***
+## dayFr-Th      0.8040     5.9809   0.134 0.893104    
+## daySa-Fr     -3.1622     5.9809  -0.529 0.597174    
+## daySu-Sa      5.3730     5.9809   0.898 0.369309    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 42.29 on 693 degrees of freedom
+## Multiple R-squared:  0.05869,    Adjusted R-squared:  0.05054 
+## F-statistic: 7.202 on 6 and 693 DF,  p-value: 1.808e-07
+\end{verbatim}
+
+\subsection{3. Use pairwise.t.test function to compute all pairwise
+t-tests and the holm correction between days of the week. Describe
+concisely which days differed from which other
+days.}\label{use-pairwise.t.test-function-to-compute-all-pairwise-t-tests-and-the-holm-correction-between-days-of-the-week.-describe-concisely-which-days-differed-from-which-other-days.}
+
+\subsection{4. Use an aov() model to predict stock price by day, and
+then compute Tukey HSD test on all pairwise comparisons using the Tukey
+test. Do the result differ from part
+3?}\label{use-an-aov-model-to-predict-stock-price-by-day-and-then-compute-tukey-hsd-test-on-all-pairwise-comparisons-using-the-tukey-test.-do-the-result-differ-from-part-3}
+
+\subsection{5. Compute a kruskall-wallis test to see if the
+non-parametric test shows stock price depended on
+day-of-week.}\label{compute-a-kruskall-wallis-test-to-see-if-the-non-parametric-test-shows-stock-price-depended-on-day-of-week.}
+
+\subsection{6. Compute a one-way BayesFactor ANOVA and report the Bayes
+factor score determining if day-of-week impacted stock
+price.}\label{compute-a-one-way-bayesfactor-anova-and-report-the-bayes-factor-score-determining-if-day-of-week-impacted-stock-price.}
+
+\section{2. Multi-way ANOVA and
+regression.}\label{multi-way-anova-and-regression.}
+
+The stocks were sampled from two different sectors (health and
+automotive). Was there a difference in outcome based on sector? What
+about when day day-of-week is considered. Report a standard (Type-I)
+ANOVA F-test for:
+
+\subsection{1. the effect of sector on its own (a one-way test),
+and}\label{the-effect-of-sector-on-its-own-a-one-way-test-and}
+
+\subsection{\texorpdfstring{2. whether sector has an effect \emph{after}
+day-of-week is considered:
+lm(stockprice\textasciitilde{}day+sector)}{2. whether sector has an effect after day-of-week is considered: lm(stockprice\textasciitilde{}day+sector)}}\label{whether-sector-has-an-effect-after-day-of-week-is-considered-lmstockpricedaysector}
+
+\subsection{3. whether the results differ if sector is included in the
+model first
+(lm(stockprice\textasciitilde{}sector+day))}\label{whether-the-results-differ-if-sector-is-included-in-the-model-first-lmstockpricesectorday}
+
+Then compare results of the three tests, including the sum-squared
+deviations and the results of the F test. Are the results of the tests
+identical or do they differ? Why? Pick which one you would prefer to use
+to test the effect, and describe why you feel it is better than the
+others.
+
+
+\end{document}

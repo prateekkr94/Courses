@@ -1,0 +1,97 @@
+---
+title: "PS10"
+author: "Prateek Kumar"
+date: "2 December 2018"
+output: word_document
+---
+
+#1. Categorical Predictors
+```{r}
+library(ggplot2)
+data <- read.csv("ps10data.csv")
+
+ggplot(data,aes(x=day,y=stockprice)) + geom_point(aes(color=sector)) +theme_minimal()
+```
+Loading the dataset
+
+```{r}
+#Question1
+day.0 <- c("Mo","Tu","We","Th","Fr","Sa","Su")
+data$day<- factor(data$day,levels=day.0) #add the level to months variable
+aggregate(data$stockprice,list(data$day),mean)
+model1 <- lm(stockprice~day, data=data)
+model1
+summary(model1)
+```
+Q1 analysis
+
+
+```{r}
+#Question2
+library(MASS)
+contrasts(data$day)<-contr.sdif(levels(data$day))
+model2 <- lm(stockprice~day, data=data)
+model2
+summary(model2)
+```
+Q2 analysis
+
+
+```{r}
+#Question3
+pairwise.t.test(data$stockprice, data$day)
+```
+Q3 analysis
+
+
+```{r}
+#Question4
+TukeyHSD(aov(stockprice~day,data=data))
+```
+Q4 analysis
+
+
+```{r}
+#Question5
+kruskal.test(stockprice~day,data=data)
+#summary(kruskal.test(stockprice~day,data=data))
+```
+Q5 analysis
+
+
+```{r}
+#Question6
+library(BayesFactor)
+bfmodel <- anovaBF(stockprice~day,data=data)
+bfmodel
+```
+Q6 analysis
+
+
+#2. Multi-way ANOVA and regression.
+```{r}
+#Question1
+lm1 <- lm(stockprice~sector, data=data)
+summary(lm1)
+anova(lm1)
+#summary(aov(lm(stockprice~sector, data=data)))
+```
+Q1 Analysis
+
+
+
+```{r}
+#Question2
+anova(lm(stockprice~day+sector, data=data))
+```
+Q2 Analysis
+
+
+
+```{r}
+#Question3
+anova(lm(stockprice~sector+day, data=data))
+```
+Q3 Analysis
+
+

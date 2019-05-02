@@ -1,0 +1,105 @@
+---
+title: "Problem Set 10"
+author: "Prateek Kumar prateekk@mtu.edu"
+date: "December 02, 2018"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+`This problem set covers simple categorical predictors, the link between regression and ANOVA, and post-hoc tests, and multi-way ANOVA.`
+
+# Categorical Predictors
+On each of day of one week, we sampled 100 random company stocks and examined their trading price.  Each day a different set of stocks was sampled at random from the NYSE and NASDAQ published prices.
+
+```{r}
+library(ggplot2)
+data <- read.csv("ps10data.csv")
+
+head(data)
+
+```
+This is stored in a matrix. For a regression or ANOVA, we really need each one 
+
+```{r}
+
+ggplot(data,aes(x=day,y=stockprice)) + geom_point(aes(color=sector)) +theme_minimal()
+```
+For this problem, we want to determine, using a number of methods, which days differed from which other days. In each case, run the test, and answer the question in 1-2 sentences describing what you found. Use a p=.05 as a criterion for determining whether an effect isstatistically significant.
+
+## 1. First use a contrast that will compare each day to Monday, and report which of the days had prices significantly higher than monday (report the test obtained directly from the coefficients of lm by doing summary() on the results of lm()). 
+```{r}
+#Question1
+day.0 <- c("Mo","Tu","We","Th","Fr","Sa","Su")
+data$day<- factor(data$day,levels=day.0) #add the level to months variable
+aggregate(data$stockprice,list(data$day),mean)
+model1 <- lm(stockprice~day, data=data)
+model1
+summary(model1)
+```
+## 2. Then, use successive difference coding of the day variable to determine which days of the week differed significantly from the previous day. 
+```{r}
+#Question2
+library(MASS)
+contrasts(data$day)<-contr.sdif(levels(data$day))
+model2 <- lm(stockprice~day, data=data)
+model2
+summary(model2)
+```
+## 3. Use pairwise.t.test function to compute all pairwise t-tests and the holm correction between days of the week. Describe concisely which days differed from which other days.
+```{r}
+#Question3
+pairwise.t.test(data$stockprice, data$day)
+```
+## 4. Use an aov() model to predict stock price by day, and then compute Tukey HSD test on all pairwise comparisons using the Tukey test.  Do the result differ from part 3?
+```{r}
+#Question4
+TukeyHSD(aov(stockprice~day,data=data))
+```
+## 5. Compute a kruskall-wallis test to see if the non-parametric test shows stock price depended on day-of-week.
+```{r}
+#Question5
+kruskal.test(stockprice~day,data=data)
+#summary(kruskal.test(stockprice~day,data=data))
+```
+## 6. Compute a one-way BayesFactor ANOVA and report the Bayes factor score determining if day-of-week impacted stock price.
+```{r}
+#Question6
+library(BayesFactor)
+bfmodel <- anovaBF(stockprice~day,data=data)
+bfmodel
+```
+
+
+# 2. Multi-way ANOVA and regression.
+
+
+The  stocks were sampled from two different sectors (health and automotive). Was there a difference in outcome based on sector?  What about when day day-of-week is considered. Report a standard (Type-I) ANOVA F-test for:
+
+## 1. the effect of sector on its own (a one-way test), and 
+```{r}
+#Question1
+data$sector <- as.factor(data$sector)
+lm1 <- lm(stockprice~sector, data=data)
+#summary(lm1)
+anova(lm1)
+#summary(aov(lm(stockprice~sector, data=data)))
+
+oneway.test(stockprice~sector, var.equal=T, data = data) #checks difference in mean
+```
+## 2. whether sector has an effect _after_ day-of-week is considered: lm(stockprice~day+sector)
+```{r}
+#Question2
+anova(lm(stockprice~day+sector, data=data))
+```
+## 3. whether the results differ if sector is included in the model first (lm(stockprice~sector+day))
+```{r}
+#Question3
+anova(lm(stockprice~sector+day, data=data))
+```
+ Then compare results of the three tests, including the sum-squared deviations and the results of the F test.   Are the results of the tests identical or do they differ?  Why?  Pick which one you would prefer to use to test the effect, and describe why you feel it is better than the others.
+
+
