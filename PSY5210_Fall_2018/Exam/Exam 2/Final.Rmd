@@ -1,0 +1,377 @@
+---
+title: "Final"
+author: "Prateek Kumar"
+date: "11 November 2018"
+output: word_document
+---
+
+#Question1
+```{r}
+A2 <- read.csv("A2_1_MOPP.csv", header=T)
+B1 <- read.csv("B1_2_BDU.csv", header=T)
+C2 <- read.csv("C2_2_MOPP.csv", header=T)
+D2 <- read.csv("D2_2_MOPP.csv", header=T)
+
+library(dplyr)
+
+dfA2 <- A2 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+dfB1 <- B1 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+dfC2 <- C2 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+dfD2 <- D2 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+
+# sapply(dfA2, class)
+# summary(dfA2)
+# sapply(dfB1, class)
+# summary(dfB1)
+# sapply(dfC2, class)
+# summary(dfC2)
+# sapply(dfD2, class)
+# summary(dfD2)
+
+
+# colSums(is.na(dfA2)) #No missing values in the 4 dataframes
+# colSums(is.na(dfB1))
+# colSums(is.na(dfC2))
+# colSums(is.na(dfD2))
+
+# ECG.HR average 60-100 per minute
+# CoreTemp average 36.3-37.3 C
+# Temp average 36.5-37.5 C
+
+dfA2$CoreTemp[which(dfA2$CoreTemp==0)] = NA
+dfB1$CoreTemp[which(dfB1$CoreTemp==0)] = NA
+dfC2$CoreTemp[which(dfC2$CoreTemp==0)] = NA
+dfD2$CoreTemp[which(dfD2$CoreTemp==0)] = NA
+
+
+require(lattice)
+
+# A2_1_MOPP
+xplot <- rep((0:(length(dfA2$Time)-1))/1000,5)
+yplot <- c(dfA2$ECG.HR, dfA2$EDR.BR, dfA2$Belt.BR, dfA2$CoreTemp, dfA2$Temp)
+gplot <- c(rep("ECG.HR",length(dfA2$ECG.HR)),
+           rep("EDR.BR",length(dfA2$EDR.BR)),
+           rep("Belt.BR",length(dfA2$Belt.BR)),
+           rep("CoreTemp",length(dfA2$CoreTemp)),
+           rep("Temp",length(dfA2$Temp)))
+
+tp <- xyplot(yplot~xplot|gplot, type="l", layout=c(1,5), 
+             xlab="Time", ylab="Attributes", grid=T, lwd=1.5, main = "A2_1_MOPP", col="Navy",
+             scales=list(x=list(draw=FALSE), 
+                         y=list(relation='free',limits=list(c(17,41.6), c(37.42,37.69), 
+                                                            c(14.5,144.8), c(21,41.7), c(31.2,35.8)))))
+tp
+
+# B1_2_BDU
+xplot <- rep((0:(length(dfB1$Time)-1))/1000,5)
+yplot <- c(dfB1$ECG.HR, dfB1$EDR.BR, dfB1$Belt.BR, dfB1$CoreTemp, dfB1$Temp)
+gplot <- c(rep("ECG.HR",length(dfB1$ECG.HR)),
+           rep("EDR.BR",length(dfB1$EDR.BR)),
+           rep("Belt.BR",length(dfB1$Belt.BR)),
+           rep("CoreTemp",length(dfB1$CoreTemp)),
+           rep("Temp",length(dfB1$Temp)))
+
+tp <- xyplot(yplot~xplot|gplot, type="l", layout=c(1,5), 
+             xlab="Time", ylab="Attributes", grid=T, lwd=1.5, main = "B1_2_BDU", col="Navy",
+             scales=list( x=list(draw=FALSE), 
+                          y=list(relation='free',limits=list(c(6,30.7), c(36.9,37.22), 
+                                                             c(76.2,221.1), c(6,69.1), c(25.9,33.1)))))
+tp
+
+# C2_2_MOPP
+xplot <- rep((0:(length(dfC2$Time)-1))/1000,5)
+yplot <- c(dfC2$ECG.HR, dfC2$EDR.BR, dfC2$Belt.BR, dfC2$CoreTemp, dfC2$Temp)
+gplot <- c(rep("ECG.HR",length(dfC2$ECG.HR)),
+           rep("EDR.BR",length(dfC2$EDR.BR)),
+           rep("Belt.BR",length(dfC2$Belt.BR)),
+           rep("CoreTemp",length(dfC2$CoreTemp)),
+           rep("Temp",length(dfC2$Temp)))
+
+tp <- xyplot(yplot~xplot|gplot, type="l", layout=c(1,5), 
+             xlab="Time", ylab="Attributes", grid=T, lwd=1.5, main = "C2_2_MOPP", col="Navy",
+             scales=list( x=list(draw=FALSE), 
+                          y=list(relation='free',limits=list(c(6.7,32.7), c(36.84,37.43), 
+                                                             c(59,139.4), c(11.2,37.8), c(32.8,37.1)))))
+tp
+
+# D2_2_MOPP
+xplot <- rep((0:(length(dfD2$Time)-1))/1000,5)
+yplot <- c(dfD2$ECG.HR, dfD2$EDR.BR, dfD2$Belt.BR, dfD2$CoreTemp, dfD2$Temp)
+gplot <- c(rep("ECG.HR | Min = 1",length(dfD2$ECG.HR)),
+           rep("EDR.BR",length(dfD2$EDR.BR)),
+           rep("Belt.BR",length(dfD2$Belt.BR)),
+           rep("CoreTemp",length(dfD2$CoreTemp)),
+           rep("Temp",length(dfD2$Temp)))
+
+tp <- xyplot(yplot~xplot|gplot, type=c("l"), layout=c(1,5), 
+             xlab="Time", ylab="Attributes", grid=T, lwd=1, main = "D2_2_MOPP", col="Navy",
+             scales=list( x=list(draw=FALSE), 
+                          y=list(relation='free',limits=list(c(5,32.9), c(37.52,37.66), 
+                                                             c(77.3,159.9), c(11.2,37.8), c(31,38)))))
+tp
+
+```
+
+#Question2
+```{r}
+A2 <- read.csv("A2_1_MOPP.csv", header=T)
+B1 <- read.csv("B1_2_BDU.csv", header=T)
+C2 <- read.csv("C2_2_MOPP.csv", header=T)
+D2 <- read.csv("D2_2_MOPP.csv", header=T)
+
+library(dplyr)
+
+dfA2 <- A2 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+dfB1 <- B1 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+dfC2 <- C2 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+dfD2 <- D2 %>% select(Time, ECG.HR, EDR.BR, Belt.BR, CoreTemp, Temp)
+
+library(ggplot2)
+dfA2$ECG.HR[which(dfA2$ECG.HR==0)] = NA
+dfB1$ECG.HR[which(dfA2$ECG.HR==0)] = NA
+dfC2$ECG.HR[which(dfA2$ECG.HR==0)] = NA
+dfD2$ECG.HR[which(dfA2$ECG.HR==0)] = NA
+
+p <- ggplot(data=dfA2, aes(x=as.numeric(Time),y=ECG.HR))
+p+geom_line(color="orange",size=1)+geom_smooth(method = "loess",stat="smooth",size=1,span=0.02)+ theme_bw()+
+  xlab("Time")+labs(title = "ECG.HR vs Time", subtitle = "Loess Regression Plot | R^2 = 0.405",
+                    caption = "(based on data from B1_2_BDU)")
+lmodel <- loess(as.numeric(dfA2$Time)~dfA2$ECG.HR,span=0.02)
+cor(as.numeric(dfA2$Time),predict(lmodel))^2
+
+p <- ggplot(data=dfB1, aes(x=as.numeric(Time),y=ECG.HR))
+p+geom_line(color="orange",size=1)+geom_smooth(method = "loess",stat="smooth",size=2,span=0.008)+ theme_bw()+
+  xlab("Time")+labs(title = "ECG.HR vs Time", subtitle = "Loess Regression Plot | R^2 = 0.345",
+                    caption = "(based on data from B1_2_BDU)")
+lmodel <- loess(as.numeric(dfB1$Time)~dfB1$ECG.HR,span=0.008)
+cor(as.numeric(dfB1$Time),predict(lmodel))^2
+
+p <- ggplot(data=dfC2, aes(x=as.numeric(Time),y=ECG.HR))
+p+geom_line(color="orange",size=1)+geom_smooth(method = "loess",stat="smooth",size=2,span=0.008)+ theme_bw()+
+  xlab("Time")+labs(title = "ECG.HR vs Time", subtitle = "Loess Regression Plot | R^2 = 0.338",
+                    caption = "(based on data from C2_2_MOPP)")
+lmodel <- loess(as.numeric(dfC2$Time)~dfC2$ECG.HR,span=0.008)
+cor(as.numeric(dfC2$Time),predict(lmodel))^2
+
+p <- ggplot(data=dfD2, aes(x=as.numeric(Time),y=ECG.HR))
+p+geom_line(color="orange",size=1)+geom_smooth(method = "loess",stat="smooth",size=2,span=0.011)+ theme_bw()+
+  xlab("Time")+labs(title = "ECG.HR vs Time", subtitle = "Loess Regression Plot | R^2 = 0.356",
+                    caption = "(based on data from D2_2_MOPP)")
+lmodel <- loess(as.numeric(dfD2$Time)~dfD2$ECG.HR,span=0.011)
+cor(as.numeric(dfD2$Time),predict(lmodel))^2
+
+```
+
+#Question3
+```{r}
+A2 <- read.csv("A2_1_MOPP.csv", header=T)
+B1 <- read.csv("B1_2_BDU.csv", header=T)
+
+A2_BR <- c(A2$EDR.BR, A2$Belt.BR)
+t <- rep(1:nrow(A2),2)
+c <- rep(c("ecg","belt"), times = 1, length.out = NA, each = 592)
+
+df_A2 = cbind(time=t,type=c,rate=A2_BR)
+df_A2 = data.frame(df_A2)
+df_A2$time = as.numeric(df_A2$time)
+df_A2$rate = as.numeric(as.matrix(df_A2$rate))
+
+B1_BR <- c(B1$EDR.BR, B1$Belt.BR)
+t <- rep(1:nrow(B1),2)
+c <- rep(c("ecg","belt"), times = 1, length.out = NA, each = 1294)
+
+df_B1 = cbind(time=t,type=c,rate=B1_BR)
+df_B1 = data.frame(df_B1)
+df_B1$time = as.numeric(df_B1$time)
+df_B1$rate = as.numeric(as.matrix(df_B1$rate))
+
+# library(ggplot2)
+# plot of BR and Time:
+# plot(as.numeric(df_A2$time),as.numeric(df_A2$rate),pch=16 , cex=0.5, col=rgb(0.4,0.4,0.8,0.6)) 
+# abline(model_A2_1$coefficients)
+# Can we find a polynome that fit this function ?
+model_A2_1 <- lm(rate ~ poly(time, 1, raw = TRUE) + type, data = df_A2)
+summary(model_A2_1)
+model_A2_2 <- lm(rate ~ poly(time, 2, raw = TRUE) + type, data = df_A2)
+summary(model_A2_2)
+model_A2_3 <- lm(rate ~ poly(time, 3, raw = TRUE) + type, data = df_A2)
+summary(model_A2_3)
+model_A2_4 <- lm(rate ~ poly(time, 4, raw = TRUE) + type, data = df_A2)
+summary(model_A2_4)
+model_A2_5 <- lm(rate ~ poly(time, 5, raw = TRUE) + type, data = df_A2)
+summary(model_A2_5)
+model_A2_6 <- lm(rate ~ poly(time, 6, raw = TRUE) + type, data = df_A2)
+summary(model_A2_6)
+model_A2_7 <- lm(rate ~ poly(time, 7, raw = TRUE) + type, data = df_A2)
+summary(model_A2_7)
+model_A2_8 <- lm(rate ~ poly(time, 8, raw = TRUE) + type, data = df_A2)
+summary(model_A2_8)
+model_A2_9 <- lm(rate ~ poly(time, 9, raw = TRUE) + type, data = df_A2)
+summary(model_A2_9)
+model_A2_10 <- lm(rate ~ poly(time, 10, raw = TRUE) + type, data = df_A2)
+summary(model_A2_10)
+model_A2_20 <- lm(rate ~ poly(time, 20, raw = TRUE) + type, data = df_A2)
+summary(model_A2_20)
+model_A2_30 <- lm(rate ~ poly(time, 30, raw = TRUE) + type, data = df_A2)
+summary(model_A2_30)
+model_A2_50 <- lm(rate ~ poly(time, 50, raw = TRUE) + type, data = df_A2)
+summary(model_A2_50)
+model_A2_70 <- lm(rate ~ poly(time, 70, raw = TRUE) + type, data = df_A2)
+summary(model_A2_70)
+model_A2_110 <- lm(rate ~ poly(time, 110, raw = TRUE) + type, data = df_A2)
+#summary(model_A2_110)$adj.r.squared
+summary(model_A2_110)
+
+# summary(model_A2_1)
+# model_A2_1$coefficients
+
+data.frame(model = paste ("lm" ,1:15 , sep =""), 
+           rbind ( extractAIC ( model_A2_1 ), 
+                   extractAIC ( model_A2_2 ), 
+                   extractAIC ( model_A2_3 ), 
+                   extractAIC ( model_A2_4 ), 
+                   extractAIC ( model_A2_5 ),
+                   extractAIC ( model_A2_6 ),
+                   extractAIC ( model_A2_7 ),
+                   extractAIC ( model_A2_8 ),
+                   extractAIC ( model_A2_9 ),
+                   extractAIC ( model_A2_10 ),
+                   extractAIC ( model_A2_20 ),
+                   extractAIC ( model_A2_30 ),
+                   extractAIC ( model_A2_50 ),
+                   extractAIC ( model_A2_70 ),
+                   extractAIC ( model_A2_110 )))
+
+extractBIC <- function (model) 
+  { 
+  extractAIC (model ,k= log ( length ( model $ residuals ))) 
+  }
+data.frame( model = paste ("lm" ,1:15 , sep =""), 
+            rbind ( extractBIC ( model_A2_1 ), 
+                    extractBIC ( model_A2_2 ), 
+                    extractBIC ( model_A2_3 ), 
+                    extractBIC ( model_A2_4 ), 
+                    extractBIC ( model_A2_5 ),
+                    extractBIC ( model_A2_6 ),
+                    extractBIC ( model_A2_7 ),
+                    extractBIC ( model_A2_8 ),
+                    extractBIC ( model_A2_9 ),
+                    extractBIC ( model_A2_10 ),
+                    extractBIC ( model_A2_20 ),
+                    extractBIC ( model_A2_30 ),
+                    extractBIC ( model_A2_50 ),
+                    extractBIC ( model_A2_70 ),
+                    extractBIC ( model_A2_110 )))
+
+anova(model_A2_1, model_A2_2, model_A2_3, model_A2_4, model_A2_5, model_A2_6, model_A2_7, model_A2_8, 
+      model_A2_9, model_A2_10, model_A2_20, model_A2_30, model_A2_50, model_A2_70, model_A2_110)
+
+####################################################################
+
+model_B1_1 <- lm(rate ~ poly(time, 1, raw = TRUE) + type, data = df_B1)
+#summary(model_B1_1)$adj.r.squared
+summary(model_B1_1)
+model_B1_2 <- lm(rate ~ poly(time, 2, raw = TRUE) + type, data = df_B1)
+summary(model_B1_2)
+model_B1_3 <- lm(rate ~ poly(time, 3, raw = TRUE) + type, data = df_B1)
+summary(model_B1_3)
+model_B1_4 <- lm(rate ~ poly(time, 4, raw = TRUE) + type, data = df_B1)
+summary(model_B1_4)
+model_B1_5 <- lm(rate ~ poly(time, 5, raw = TRUE) + type, data = df_B1)
+summary(model_B1_5)
+model_B1_6 <- lm(rate ~ poly(time, 6, raw = TRUE) + type, data = df_B1)
+summary(model_B1_6)
+model_B1_7 <- lm(rate ~ poly(time, 7, raw = TRUE) + type, data = df_B1)
+summary(model_B1_7)
+model_B1_8 <- lm(rate ~ poly(time, 8, raw = TRUE) + type, data = df_B1)
+summary(model_B1_8)
+model_B1_9 <- lm(rate ~ poly(time, 9, raw = TRUE) + type, data = df_B1)
+summary(model_B1_9)
+model_B1_10 <- lm(rate ~ poly(time, 10, raw = TRUE) + type, data = df_B1)
+summary(model_B1_10)
+model_B1_20 <- lm(rate ~ poly(time, 20, raw = TRUE) + type, data = df_B1)
+summary(model_B1_20)
+model_B1_30 <- lm(rate ~ poly(time, 30, raw = TRUE) + type, data = df_B1)
+summary(model_B1_30)
+model_B1_50 <- lm(rate ~ poly(time, 50, raw = TRUE) + type, data = df_B1)
+summary(model_B1_50)
+model_B1_70 <- lm(rate ~ poly(time, 70, raw = TRUE) + type, data = df_B1)
+summary(model_B1_70)
+model_B1_90 <- lm(rate ~ poly(time, 90, raw = TRUE) + type, data = df_B1)
+summary(model_B1_90)
+
+data.frame(model = paste ("lm" ,1:15 , sep =""), 
+           rbind ( extractAIC ( model_B1_1 ), 
+                   extractAIC ( model_B1_2 ), 
+                   extractAIC ( model_B1_3 ), 
+                   extractAIC ( model_B1_4 ), 
+                   extractAIC ( model_B1_5 ),
+                   extractAIC ( model_B1_6 ),
+                   extractAIC ( model_B1_7 ),
+                   extractAIC ( model_B1_8 ),
+                   extractAIC ( model_B1_9 ),
+                   extractAIC ( model_B1_10 ),
+                   extractAIC ( model_B1_20 ),
+                   extractAIC ( model_B1_30 ),
+                   extractAIC ( model_B1_50 ),
+                   extractAIC ( model_B1_70 ),
+                   extractAIC ( model_B1_90 )))
+
+extractBIC <- function (model) 
+{ 
+  extractAIC (model ,k= log ( length ( model $ residuals ))) 
+}
+data.frame( model = paste ("lm" ,1:15 , sep =""), 
+            rbind ( extractBIC ( model_B1_1 ), 
+                    extractBIC ( model_B1_2 ), 
+                    extractBIC ( model_B1_3 ), 
+                    extractBIC ( model_B1_4 ), 
+                    extractBIC ( model_B1_5 ),
+                    extractBIC ( model_B1_6 ),
+                    extractBIC ( model_B1_7 ),
+                    extractBIC ( model_B1_8 ),
+                    extractBIC ( model_B1_9 ),
+                    extractBIC ( model_B1_10 ),
+                    extractBIC ( model_B1_20 ),
+                    extractBIC ( model_B1_30 ),
+                    extractBIC ( model_B1_50 ),
+                    extractBIC ( model_B1_70 ),
+                    extractBIC ( model_B1_90 )))
+
+anova(model_B1_1, model_B1_2, model_B1_3, model_B1_4, model_B1_5, model_B1_6, model_B1_7, model_B1_8, 
+      model_B1_9, model_B1_10, model_B1_20, model_B1_30, model_B1_50, model_B1_70, model_B1_90)
+
+```
+
+#Question4
+```{r}
+D2 <- read.csv("D2_2_MOPP.csv", header=T)
+
+
+lm1 <- lm(Belt.BR~EDR.BR+Temp+CoreTemp+ECG.HR+Motion+Body.Pos+poly(as.numeric(Time)),data=D2)
+summary(lm1)
+summary(lm1)$adj.r.squared
+drop1(lm1, test = "F")
+
+lm2 <- lm(Belt.BR~EDR.BR+Temp+CoreTemp+ECG.HR+Body.Pos+poly(as.numeric(Time)),data=D2)
+summary(lm2)
+summary(lm2)$adj.r.squared
+drop1(lm2, test = "F")
+
+lm3 <- lm(Belt.BR~EDR.BR+Temp+ECG.HR+Body.Pos+poly(as.numeric(Time)),data=D2)
+summary(lm3)
+summary(lm3)$adj.r.squared
+drop1(lm3, test = "F")
+
+lm4 <- lm(Belt.BR~EDR.BR+Temp+ECG.HR+poly(as.numeric(Time),27),data=D2)
+summary(lm4)
+summary(lm4)$adj.r.squared
+drop1(lm4, test = "F")
+
+##############################################################################################
+
+step1 <- step(lm1, direction = "both", k=log(nrow(D2)))
+summary(step1)
+
+##############################################################################################
+```
