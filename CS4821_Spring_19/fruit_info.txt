@@ -1,0 +1,22 @@
+Fruit Data
+
+Columns: Type, Weight, Height, Width
+
+Type: 
+ 1 - apples
+ 2 - oranges
+ 3 - lemons
+
+Weight (grams)
+  0  - if wt <= 179.42 
+  1  - otherwise
+
+Height (cm)
+  2 - if ht > 8.5
+  1 - if ht <= 8.5 && > 7.3
+  0 - otherwise
+
+Width (cm)
+  2 - if width > 7.8
+  1 - if width <= 7.8 && >7.3
+  0 - otherwise

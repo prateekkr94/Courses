@@ -1,0 +1,1273 @@
+---
+title: "Data Mining Project"
+author: "Prateek Kumar"
+date: "April 24, 2019"
+output:
+  word_document: default
+  html_document: default
+css: style.css
+---
+
+```{r}
+set.seed(42)
+```
+
+## 1. Classification of Age based on Social Media Usage
+
+Reading the csv file
+```{r}
+Data <- read.csv(file="syp-16-data.csv", header=TRUE)
+```
+The data was collected via a survey, with respondents consisting of the Women in Computing Sciences Summer Youth Program participants and female faculty at Michigan Tech. There are 60 responses with 26 Adults and 34 HS respondents.
+
+&nbsp;
+
+### (a) Create a small multiples plot showing the number of respondents who use or do not use each app grouped by age. Consider making grouped bar plots.
+
+Firstly we have to aggregate the data
+```{r}
+x=aggregate(.~Adult, Data, sum)
+x=t(x)
+x=x[-1,]
+
+c1 = rep(names(Data[,1:19]),2)
+c2 = c("Adult","HS")
+c2 = sort(rep(c2,19))
+c3=c( as.numeric(x[,1]),as.numeric(x[,2]))
+
+tab = cbind(c1,c2,c3)
+tab = as.data.frame(tab)
+```
+Now the grouped bar plot showing the number of respondents who use or do not use each app grouped by age
+```{r}
+library(ggplot2)
+p <- ggplot(as.data.frame(tab) , aes(fill=c2, y=c3, x=c1)) + geom_bar(position="dodge", stat="identity") 
+p + labs(title = "Respondents v/s App Usage", fill = "Respondents") +
+  xlab("Different Social Medias") + ylab("Number of respondents who use the app")
+
+```
+
+&nbsp;
+
+### (b) From the figures in (a), which of the apps would you expect to find at the root of a deicision tree?
+When we look at the plot we see that KikMessenger, LinkedIn, ooVoo, Periscope, Snapchat, Tumblr and YikYak have the highest purity, i.e. these apps have just one kind of respondents so any one amongst them will be the root of the decision tree.
+
+&nbsp;
+
+### (c) Construct a decision tree using this data set. Does the variable at the root of the tree match the intuition from part (b)?
+```{r}
+library(rpart)
+library(rpart.plot)
+dt.model <- rpart(Adult ~ ., data=Data)
+dt.model
+#post(dt.model, filename='')
+rpart.plot(dt.model, box.palette="RdBu", shadow.col="gray", nn=TRUE)
+```
+
+The root of the decision tree comes out to be snapchat which was one of our expected apps. So the variable at the root of the tree somewhat matched our intuition.
+
+## 2. Classification of Spam: Trees
+
+### (a) Load in the spam data. You should not include the following columns in the classification task: isuid, id, domain, spampct, category, and cappct.
+
+```{r}
+spam <- read.csv(file="spam.csv", header=TRUE)
+spam <- subset( spam, select = -c(isuid, id, domain, spampct, category, cappct ) )
+#spam<-spam[complete.cases(spam), ]
+```
+
+### (b) Split the data into a training and test set with an 80/20 split of the data.
+
+```{r}
+dim(spam)
+indexes = sample(1:nrow(spam), size=0.2*nrow(spam))
+# Split data
+test = spam[indexes,]
+dim(test)  
+train = spam[-indexes,]
+dim(train) 
+```
+
+### (c) Construct a classification tree to predict spam on the training data.
+
+```{r}
+library(rpart)
+dt.model <- rpart(spam ~ ., data=train)
+dt.model
+```
+
+### (d) Describe the tree that is constructed (print or plot the tree). How many terminal leaves does the tree have? What is the total number of nodes in the tree?
+
+```{r}
+#post(dt.model, filename='')
+#plot(dt.model)
+#text(dt.model)
+rpart.plot(dt.model, box.palette="RdBu", shadow.col="gray", nn=TRUE)
+```
+
+In the above tree we have 6 decision nodes: box, local, large.text, name, day.of.week, time.of.day and 7 leaves.
+
+### (e) Estimate the performance of the decision tree on the training set and the testing set. Report accuracy, error rate, and AUC(Area Under Curve) using a threshold of 0.5.
+
+```{r}
+pred <- predict(dt.model, test)
+
+vec <- c()
+for (i in 1:nrow(pred))
+  {
+  if(pred[i,1]>pred[i,2]){
+    vec <- c(vec,'no')
+  }else{
+    vec <- c(vec,'yes')
+  }
+}
+
+vec1 <- factor(as.numeric(test$spam))
+vec_new <- c()
+for (j in 1:length(vec)){
+  if(vec[j]=='yes'){
+    vec_new <- c(vec_new,2)
+  }else{
+    vec_new <- c(vec_new,1)
+  }
+}
+vec_new <- as.factor(vec_new)
+
+confMat <- table(vec1,vec_new)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+vec1 <- as.numeric(vec1)
+vec_new <- as.numeric(vec_new)
+roc_obj <- roc(vec1,vec_new)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (f) Try pruning the tree, explore 2 other sized tree and report the classification performance in either case.
+
+First Tree with 10% post-pruning
+
+```{r}
+tree1 <- prune(dt.model, cp = 0.1)
+rpart.plot(tree1, box.palette="RdBu", shadow.col="gray", nn=TRUE)
+
+pred <- predict(tree1, test)
+
+vec <- c()
+for (i in 1:nrow(pred))
+  {
+  if(pred[i,1]>pred[i,2]){
+    vec <- c(vec,'no')
+  }else{
+    vec <- c(vec,'yes')
+  }
+}
+
+vec1 <- factor(as.numeric(test$spam))
+vec_new <- c()
+for (j in 1:length(vec)){
+  if(vec[j]=='yes'){
+    vec_new <- c(vec_new,2)
+  }else{
+    vec_new <- c(vec_new,1)
+  }
+}
+vec_new <- as.factor(vec_new)
+
+confMat <- table(vec1,vec_new)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+vec1 <- as.numeric(vec1)
+vec_new <- as.numeric(vec_new)
+roc_obj <- roc(vec1,vec_new)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+
+```
+
+Second Tree with 30% post-pruning
+
+```{r}
+tree2 <- prune(dt.model, cp = 0.3)
+rpart.plot(tree2, box.palette="RdBu", shadow.col="gray", nn=TRUE)
+
+pred <- predict(tree2, test)
+
+vec <- c()
+for (i in 1:nrow(pred))
+  {
+  if(pred[i,1]>pred[i,2]){
+    vec <- c(vec,'no')
+  }else{
+    vec <- c(vec,'yes')
+  }
+}
+
+vec1 <- factor(as.numeric(test$spam))
+vec_new <- c()
+for (j in 1:length(vec)){
+  if(vec[j]=='yes'){
+    vec_new <- c(vec_new,2)
+  }else{
+    vec_new <- c(vec_new,1)
+  }
+}
+vec_new <- as.factor(vec_new)
+
+confMat <- table(vec1,vec_new)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+vec1 <- as.numeric(vec1)
+vec_new <- as.numeric(vec_new)
+roc_obj <- roc(vec1,vec_new)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+## 3. Classification of Music Popularity
+
+### (a) Load in the music data. You should not use the artist or song title and IDs in the prediction along with the confidence variables.
+
+```{r}
+music <- read.csv(file="music.csv", header=TRUE)
+music <- music[,-c(1,2,3,4,5,7,10,12),drop=FALSE]
+
+dim(music)
+indexes = sample(1:nrow(music), size=0.2*nrow(music))
+# Split data
+test = music[indexes,]
+dim(test)  
+train = music[-indexes,]
+dim(train) 
+```
+
+### (b) Prepare the data for a 10-fold cross-validation. Ensure that each split of the data has a balanced distribution of class labels.
+
+```{r}
+library("caret")
+kfold <- trainControl(method  = "cv", number  = 10)
+```
+
+### (c) Use kNN to predict whether a song is a hit. Estimate the generalization performance over the 10-folds, calculate and report the accuracy, error, and AUC performance on the testing data. Show these results for three values of k = 1, 3, 5, 7, 9.
+
+For k=1
+
+```{r}
+library("e1071")
+
+fit <- train(as.factor(Top10) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = c(1)),
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+For k=3
+
+```{r}
+library("e1071")
+
+fit <- train(as.factor(Top10) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = c(3)),
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+For k=5
+
+```{r}
+library("e1071")
+
+fit <- train(as.factor(Top10) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = c(5)),
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+For k=7
+
+```{r}
+library("e1071")
+
+fit <- train(as.factor(Top10) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = c(7)),
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+For k=9
+
+```{r}
+library("e1071")
+
+fit <- train(as.factor(Top10) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = c(9)),
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (d) Use decision trees to predict whether a song is a hit. Estimate the generalization performance over the 10-folds, calculate and report the accuracy, error, and AUC performance on the testing data. Show the results for two different sized decision trees (consider different amounts of pruning).
+
+```{r}
+library("e1071")
+
+fit <- train(as.factor(Top10) ~ .,
+             method     = "rpart",
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+rpart.plot(fit$finalModel, box.palette="RdBu", shadow.col="gray", nn=TRUE)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+2 other trees. First Tree with 1% post-pruning
+
+```{r}
+dt <- fit$finalModel
+tree1 <- prune(dt, cp = 0.01)
+
+pred <- predict(tree1, test)
+vec <- c()
+for (i in 1:nrow(pred))
+  {
+  if(pred[i,1]>pred[i,2]){
+    vec <- c(vec,0)
+  }else{
+    vec <- c(vec,1)
+  }
+}
+
+confMat <- table(vec,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+vec_n1 <- as.numeric(as.character(unlist(vec)))
+vec_n2 <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(vec_n1,vec_n2)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+Second Tree with 2% post-pruning
+
+```{r}
+tree1 <- prune(dt, cp = 0.02)
+
+pred <- predict(tree1, test)
+vec <- c()
+for (i in 1:nrow(pred))
+  {
+  if(pred[i,1]>pred[i,2]){
+    vec <- c(vec,0)
+  }else{
+    vec <- c(vec,1)
+  }
+}
+
+confMat <- table(vec,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+vec_n1 <- as.numeric(as.character(unlist(vec)))
+vec_n2 <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(vec_n1,vec_n2)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+We cannot calculate AUC because there is only root node left and we will have the same results everytime.
+
+### (e) Use a Naive Bayes classifier to predict whether a song is a hit. Calculate and report the accuracy, error, and AUC performance on the testing data.
+
+```{r}
+library(e1071)
+nb_model <- naiveBayes(as.factor(Top10) ~., data = train)
+pred <- predict(nb_model, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (f) Discuss whether the selection of the negative samples included in the data set may infuence the results.
+Increasing the size of the negative training set (with a constant quantity of positives), will lead to decrease in recall and improve the precision, although no significant effect on AUC values will be observed.
+
+## 4. Classification of Music Popularity
+
+### (a) Load in the music data. You should not use the artist or song title and IDs in the prediction along with the confidence variables.
+
+```{r}
+music <- read.csv(file="music.csv", header=TRUE)
+music <- music[,-c(1,2,3,4,5,7,10,12),drop=FALSE]
+
+dim(music)
+indexes = sample(1:nrow(music), size=0.2*nrow(music))
+# Split data
+test = music[indexes,]
+dim(test)  
+train = music[-indexes,]
+dim(train) 
+```
+
+### (b) Prepare the data for a 10-fold cross-validation. Ensure that each split of the data has a balanced distribution of class labels.
+
+```{r}
+library("caret")
+kfold <- trainControl(method  = "cv", number  = 10)
+```
+
+### (f) Use Random Forests to predict whether a song is a hit. Calculate and report the accuracy, error, and AUC performance on the testing data (10-fold c.v.).
+
+```{r}
+library("e1071")
+library("ranger")
+fit <- train(as.factor(Top10) ~ .,
+             method     = "ranger",
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (g) Learn a support vector machine (SVM) with a RBF kernel to predict whether the song is a hit. Consider at least the following values for cost: 0.01, 0.1, 1, 10, 100. Calculate and report the accuracy, error, and AUC performance on the testing data for the best model found.
+
+```{r}
+library("e1071")
+tune_out <- tune.svm(x=train[,-31],y=train[,31],cost=c(0.01, 0.1, 1, 10, 100),kernel="radial",data = train)
+#print best values of cost
+tune_out$best.parameters$cost
+#build model
+svm_model <- svm(Top10~ ., data=train, method="C-classification", kernel="radial",cost=tune_out$best.parameters$cost)
+#test set predictions
+pred_svm <-predict(svm_model,test)
+
+pred_svm1 <- c()
+for (j in 1:length(pred_svm)){
+  if(abs(pred_svm[j]-0) < abs(pred_svm[j]-1)){
+    pred_svm1 <- c(pred_svm1,0)
+  }else{
+    pred_svm1 <- c(pred_svm1,1)
+  }
+}
+
+confMat <- table(pred_svm1,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- multiclass.roc(pred_svm1, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (i) Re-run the analysis in (c) using a nested cross-validation to determine the best value of k and to determine the best parameters of the SVM.
+```{r}
+library("e1071")
+
+fit <- train(as.factor(Top10) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = c(1,2,3,4,5,6,7,8,9,10)),
+             trControl  = kfold,
+             metric     = "Accuracy",
+             data       = train)
+
+pred <- predict(fit, test)
+confMat <- table(pred,test$Top10)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$Top10)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+
+print(paste0('Best k value: ',fit$bestTune))
+print(paste0('Best c value for SVM: ',tune_out$best.parameters$cost))
+```
+
+## 5. Classification of Spam
+
+### (a) Load in the spam data. You should not include the following columns in the classification task: isuid, id, domain, spampct, category, and cappct.
+
+```{r}
+spam <- read.csv(file="spam.csv", header=TRUE)
+spam <- subset( spam, select = -c(isuid, id, domain, spampct, category, cappct ) )
+spam<-spam[complete.cases(spam), ]
+```
+
+### (b) Split the data into a training and test set with an 80/20 split of the data.
+
+```{r}
+dim(spam)
+indexes = sample(1:nrow(spam), size=0.2*nrow(spam))
+# Split data
+test = spam[indexes,]
+dim(test)  
+train = spam[-indexes,]
+dim(train) 
+```
+
+### (c) Use a Naive Bayes classifier to predict spam. Calculate and report the accuracy, error, and AUC performance on the testing data.
+
+```{r}
+library(e1071)
+nb_model <- naiveBayes(as.factor(spam) ~., data = train)
+pred <- predict(nb_model, test)
+
+levels(pred) <- c("2", "1")
+levels(test$spam) <- c("2", "1")
+
+confMat <- table(pred,test$spam)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+
+pred <- as.numeric(as.character(unlist(pred)))
+tval <- as.numeric(as.character(unlist(test$spam)))
+
+roc_obj <- roc(pred,tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (d) Learn a decision tree to predict spam. Calculate and report the accuracy, error, and AUC performance on the testing data.
+
+```{r}
+library(rpart)
+dt.model <- rpart(spam ~ ., data=train)
+
+pred1 <- predict(dt.model, test)
+
+vec <- c()
+for (i in 1:nrow(pred1))
+{
+  if(pred1[i,1]>pred1[i,2]){
+    vec <- c(vec,'no')
+  }else{
+    vec <- c(vec,'yes')
+  }
+}
+
+vec1 <- factor(as.numeric(test$spam))
+vec_new <- c()
+for (j in 1:length(vec)){
+  if(vec[j]=='yes'){
+    vec_new <- c(vec_new,2)
+  }else{
+    vec_new <- c(vec_new,1)
+  }
+}
+vec_new <- as.factor(vec_new)
+
+confMat <- table(vec1,vec_new)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+vec1 <- as.numeric(vec1)
+vec_new <- as.numeric(vec_new)
+roc_obj <- roc(vec1,vec_new)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (e) Use Random Forests to predict spam. Calculate and report the accuracy, error, and AUC performance on the testing data.
+
+```{r}
+library("e1071")
+library("ranger")
+library("caret")
+
+fit <- train(as.factor(spam) ~ .,
+             method     = "ranger",
+             metric     = "Accuracy",
+             data       = train)
+
+pred2 <- predict(fit, test)
+
+levels(pred2) <- c("2", "1")
+levels(test$spam) <- c("2", "1")
+
+confMat <- table(pred2,test$spam)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+pred2 <- as.numeric(as.character(unlist(pred2)))
+tval <- as.numeric(as.character(unlist(test$spam)))
+
+roc_obj <- roc(pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (f) Learn a support vector machine (SVM) with a RBF kernel to predict spam. Use cross-validation to pick the best parameters for the kernel and SVM on the training set. Consider at least the following values for cost: {0:01; 0:1; 1; 10; 100} Calculate and report the accuracy, error, and AUC performance on the testing data for the best model found.
+
+```{r}
+library("e1071")
+
+levels(train$day.of.week) <- c("1", "2", "3", "4", "5", "6", "7")
+levels(train$box) <- c("1", "2")
+levels(train$local) <- c("1", "2")
+levels(train$name) <- c("1", "2", "3")
+levels(train$credit) <- c("1", "2")
+levels(train$sucker) <- c("1", "2")
+levels(train$porn) <- c("1", "2")
+levels(train$chain) <- c("1", "2")
+levels(train$username) <- c("1", "2")
+levels(train$large.text) <- c("1", "2")
+levels(train$spam) <- c("1", "2")
+
+indx <- sapply(train, is.factor)
+train[indx] <- lapply(train[indx], function(x) as.numeric(levels(x))[x])
+
+
+tune_out <- tune.svm(x=train[,-15],y=train[,15],cost=c(0.01, 0.1, 1, 10, 100),kernel="radial",data = train)
+
+
+#print best values of cost
+#tune_out$best.parameters$cost
+#build model
+svm_model <- svm(spam~ ., data=train, method="C-classification", kernel="radial",cost=tune_out$best.parameters$cost)
+#test set predictions
+
+levels(test$day.of.week) <- c("1", "2", "3", "4", "5", "6", "7")
+levels(test$box) <- c("1", "2")
+levels(test$local) <- c("1", "2")
+levels(test$name) <- c("1", "2", "3")
+levels(test$credit) <- c("1", "2")
+levels(test$sucker) <- c("1", "2")
+levels(test$porn) <- c("1", "2")
+levels(test$chain) <- c("1", "2")
+levels(test$username) <- c("1", "2")
+levels(test$large.text) <- c("1", "2")
+levels(test$spam) <- c("1", "2")
+
+indx <- sapply(test, is.factor)
+test[indx] <- lapply(test[indx], function(x) as.numeric(levels(x))[x])
+
+pred3 <-predict(svm_model,test)
+
+pred3_new <- c()
+for (j in 1:length(pred3)){
+  if(abs(pred3[j]-1) < abs(pred3[j]-2)){
+    pred3_new <- c(pred3_new,1)
+  }else{
+    pred3_new <- c(pred3_new,2)
+  }
+}
+
+confMat <- table(pred3_new,test$spam)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+#pred3 <- as.numeric(as.character(unlist(pred3)))
+tval <- as.numeric(as.character(unlist(test$spam)))
+
+roc_obj <- multiclass.roc(pred3_new, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (g) Examine which samples are mis-classified by some of the above models (construct a matrix with a column of predictions for each method: Naive Bayes, Decision Trees, SVMs). Create an ensemble predictor that takes the majority vote of the three models. Calculate and report the accuracy, error, and AUC performance on the testing data.
+
+```{r}
+#pred : NB
+#vec_new : DT
+#pred2 : RF
+#pred3_new: svm
+
+com_pred <- cbind(pred,vec_new,pred3_new)
+com_pred <- as.data.frame(com_pred)
+names(com_pred) <- c("NB","DT","SVM")
+
+fin_pred <- c()
+for (i in 1:nrow(com_pred))
+  {
+  one_c <- 0
+  two_c <- 0
+  for (j in 1:length(com_pred[i,]))
+    {
+    if(com_pred[i,j] == 1)
+    {
+      one_c <- one_c + 1 
+    }
+    else
+    {
+    two_c <- two_c + 1
+    }
+  }    
+  if(one_c > two_c)
+  {
+    fin_pred <- c(fin_pred,1)
+  }
+  else
+  {
+    fin_pred <- c(fin_pred,2)
+  }
+
+}  
+
+confMat <- table(fin_pred,test$spam)
+accuracy <- sum(diag(confMat))/sum(confMat)
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+
+tval <- as.numeric(as.character(unlist(test$spam)))
+
+roc_obj <- multiclass.roc(fin_pred, tval)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+
+```
+
+### (h) (8 points) Use bagging to fit an ensemble of 100 trees to the training data. Report the error rate on the testing data. 
+
+```{r}
+library(adabag)
+library(ipred)
+library(rpart)
+bag <- bagging(spam ~.,data=train,mfinal=100)
+
+bag_pred <- predict(bag,newdata=test)
+#confMat <- bag_pred$confusion
+
+pred_bag <- c()
+for (j in 1:length(bag_pred)){
+  if(abs(bag_pred[j]-1) < abs(bag_pred[j]-2)){
+    pred_bag <- c(pred_bag,1)
+  }else{
+    pred_bag <- c(pred_bag,2)
+  }
+}
+
+confMat <- table(pred_bag,test$spam)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+#print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+```
+
+### (i) Use boosting to fit an ensemble of 100 trees to the training data. Report the error rate on the testing data. 
+
+```{r}
+library(adabag);
+library(ipred);
+library(rpart);
+
+train$spam <- as.factor(train$spam)
+
+boost <- boosting(spam ~., data=train, mfinal=100)
+
+boost_pred <- predict.boosting(boost,newdata=test)
+confMat <- boost_pred$confusion
+
+print(paste0('Error: ',round(boost_pred$error,2)))
+```
+
+## 6. Naive Bayes Classification
+
+### (a) Split the data into training and testing data using a 75/25 split.
+
+```{r}
+fruit <- read.table("fruit.txt", sep=",")
+fruit <- as.data.frame(fruit)
+names(fruit) <- c('Type', 'Weight', 'Height', 'Width')
+
+dim(fruit)
+indexes = sample(1:nrow(fruit), size=0.25*nrow(fruit))
+# Split data
+test = fruit[indexes,]
+dim(test)  
+train = fruit[-indexes,]
+dim(train) 
+```
+
+### (b) Estimate the probabilities needed for Naive Bayes Classification using Laplace smoothing
+
+## Here we have 3 fruits, so laplace smoothing for each fruit
+```{r}
+# we calculate laplace probabilities for k=1
+den <- nrow(train)
+den <- den + 3 # because we have 3 fruits type here so domain here is 3
+
+#Prior Probabilities
+p_t1 <- (sum(train$Type == 1) + 1)/den
+p_t2 <- (sum(train$Type == 2) + 1)/den
+p_t3 <- (sum(train$Type == 3) + 1)/den
+
+#filtering out the 3 fruits table
+c1_tab = train[train$Type == 1, ]
+c2_tab = train[train$Type == 2, ]
+c3_tab = train[train$Type == 3, ]
+
+########### Conditional probabilities for apple
+#Weight
+den <- nrow(c1_tab)
+den <- den + 2 # because we have 2 weight type here so domain here is 2
+p_w0_t1 = (sum(c1_tab$Weight == 0) + 1)/den
+p_w1_t1 = (sum(c1_tab$Weight == 1) + 1)/den
+
+#height
+den <- nrow(c1_tab)
+den <- den + 3 # because we have 3 height type here so domain here is 3
+p_h0_t1 = (sum(c1_tab$Height == 0) + 1)/den
+p_h1_t1 = (sum(c1_tab$Height == 1) + 1)/den
+p_h2_t1 = (sum(c1_tab$Height == 2) + 1)/den
+
+#width
+den <- nrow(c1_tab)
+den <- den + 3 # because we have 3 width type here so domain here is 3
+p_wd0_t1 = (sum(c1_tab$Width == 0) + 1)/den
+p_wd1_t1 = (sum(c1_tab$Width == 1) + 1)/den
+p_wd2_t1 = (sum(c1_tab$Width == 2) + 1)/den
+
+########### Conditional probabilities for orange
+#Weight
+den <- nrow(c2_tab)
+den <- den + 2 # because we have 2 weight type here so domain here is 2
+p_w0_t2 = (sum(c2_tab$Weight == 0) + 1)/den
+p_w1_t2 = (sum(c2_tab$Weight == 1) + 1)/den
+
+#height
+den <- nrow(c2_tab)
+den <- den + 3 # because we have 3 height type here so domain here is 3
+p_h0_t2 = (sum(c2_tab$Height == 0) + 1)/den
+p_h1_t2 = (sum(c2_tab$Height == 1) + 1)/den
+p_h2_t2 = (sum(c2_tab$Height == 2) + 1)/den
+
+#width
+den <- nrow(c2_tab)
+den <- den + 3 # because we have 3 width type here so domain here is 3
+p_wd0_t2 = (sum(c2_tab$Width == 0) + 1)/den
+p_wd1_t2 = (sum(c2_tab$Width == 1) + 1)/den
+p_wd2_t2 = (sum(c2_tab$Width == 2) + 1)/den
+
+########### Conditional probabilities for lemon
+#Weight
+den <- nrow(c3_tab)
+den <- den + 2 # because we have 2 weight type here so domain here is 2
+p_w0_t3 = (sum(c3_tab$Weight == 0) + 1)/den
+p_w1_t3 = (sum(c3_tab$Weight == 1) + 1)/den
+
+#height
+den <- nrow(c3_tab)
+den <- den + 3 # because we have 3 height type here so domain here is 3
+p_h0_t3 = (sum(c3_tab$Height == 0) + 1)/den
+p_h1_t3 = (sum(c3_tab$Height == 1) + 1)/den
+p_h2_t3 = (sum(c3_tab$Height == 2) + 1)/den
+
+#width
+den <- nrow(c3_tab)
+den <- den + 3 # because we have 3 width type here so domain here is 3
+p_wd0_t3 = (sum(c3_tab$Width == 0) + 1)/den
+p_wd1_t3 = (sum(c3_tab$Width == 1) + 1)/den
+p_wd2_t3 = (sum(c3_tab$Width == 2) + 1)/den
+```
+
+### (c) Report the predicted class on the test samples using the estimated parameters. Do these calculation using code/functions that you create and the probabilities estimated in part (b);
+
+```{r}
+#test for apple
+c_app <- c()
+
+for (i in 1:nrow(test))
+{
+  w = 0
+  h = 0
+  wd = 0
+  val1 = 0 
+  
+  if(test[i,]$Weight == 0)
+  {
+    w = p_w0_t1
+  }
+  if(test[i,]$Weight == 1)
+  {
+    w = p_w1_t1
+  }
+  
+  if(test[i,]$Height == 0)
+  {
+    h = p_h0_t1
+  }
+  if(test[i,]$Height == 1)
+  {
+    h = p_h1_t1
+  }
+  if(test[i,]$Height == 2)
+  {
+    h = p_h2_t1
+  }
+  
+  if(test[i,]$Width == 0)
+  {
+    wd = p_wd0_t1
+  }
+  if(test[i,]$Width == 1)
+  {
+    wd = p_wd1_t1
+  }
+  if(test[i,]$Width == 2)
+  {
+    wd = p_wd2_t1
+  }
+  
+  val1 = w * h * wd * p_t1
+  
+  c_app <- c(c_app, val1)
+}  
+
+#test for orange
+c_org <- c()
+
+for (i in 1:nrow(test))
+{
+  w = 0
+  h = 0
+  wd = 0
+  val1 = 0 
+  if(test[i,]$Weight == 0)
+  {
+    w = p_w0_t2
+  }
+  else if(test[i,]$Weight == 1)
+  {
+    w = p_w1_t2
+  }
+  
+  if(test[i,]$Height == 0)
+  {
+    h = p_h0_t2
+  }
+  else if(test[i,]$Height == 1)
+  {
+    h = p_h1_t2
+  }
+  else if(test[i,]$Height == 2)
+  {
+    h = p_h2_t2
+  }
+  
+  if(test[i,]$Width == 0)
+  {
+    wd = p_wd0_t2
+  }
+  else if(test[i,]$Width == 1)
+  {
+    wd = p_wd1_t2
+  }
+  else if(test[i,]$Width == 2)
+  {
+    wd = p_wd2_t2
+  }
+  
+  val1 = w * h * wd * p_t2
+  
+  c_org <- c(c_org, val1)
+}
+
+#test for lemon
+c_lem <- c()
+
+for (i in 1:nrow(test))
+{
+  w = 0
+  h = 0
+  wd = 0
+  val1 = 0 
+  if(test[i,]$Weight == 0)
+  {
+    w = p_w0_t3
+  }
+  else if(test[i,]$Weight == 1)
+  {
+    w = p_w1_t3
+  }
+  
+  if(test[i,]$Height == 0)
+  {
+    h = p_h0_t3
+  }
+  else if(test[i,]$Height == 1)
+  {
+    h = p_h1_t3
+  }
+  else if(test[i,]$Height == 2)
+  {
+    h = p_h2_t3
+  }
+  
+  if(test[i,]$Width == 0)
+  {
+    wd = p_wd0_t3
+  }
+  else if(test[i,]$Width == 1)
+  {
+    wd = p_wd1_t3
+  }
+  else if(test[i,]$Width == 2)
+  {
+    wd = p_wd2_t3
+  }
+  
+  val1 = w * h * wd * p_t2
+  
+  c_lem <- c(c_lem, val1)
+}
+
+df_acc <- data.frame(c_app, c_org, c_lem)
+
+c_acc_1 <- c()
+
+for (i in 1:nrow(df_acc))
+{
+  a = df_acc[i,1]
+  b = df_acc[i,2]
+  c = df_acc[i,3]
+  val = 0
+  
+  if(a >= b && a >= c)
+  {
+    val = 1
+  }
+  if(b >= a && b >= c)
+  {
+    val = 2
+  }
+  if(c >= a && c >= b)
+  {
+      val = 3
+  }
+  
+  c_acc_1 <- c(c_acc_1,val)
+}
+
+
+confMat <- table(c_acc_1,test$Type)
+accuracy <- sum(diag(confMat))/sum(confMat)
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+
+roc_obj <- multiclass.roc(c_acc_1,test$Type)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (d) Confirm the results above using a Naive Bayes classifier available a function or package.
+
+```{r}
+library(e1071)
+nb_model <- naiveBayes(as.factor(Type) ~., data = train)
+pred <- predict(nb_model, test)
+
+confMat <- table(pred,test$Type)
+accuracy <- sum(diag(confMat))/sum(confMat)
+
+print(paste0('Accuracy: ',round(accuracy,2)))
+print(paste0('Error Rate: ',round((1-accuracy),2)))
+
+library(pROC)
+
+pred_6 <- as.numeric(as.character(unlist(pred)))
+
+roc_obj <- multiclass.roc(pred_6,test$Type)
+print(paste0('AUC: ',round(auc(roc_obj),2)))
+```
+
+### (e) Repeat the evaluation using a 75/25 split 10 times. Report the accuracy, sensitivity, and specificity for each of the 10 repetitions and averaged over the 10 repetitions.
+
+```{r}
+c_acc_6 <- c()
+
+df_sen <- data.frame(Apple = numeric(0), Orange = numeric(0), Lemon = numeric(0))
+df_spe <- data.frame(Apple = numeric(0), Orange = numeric(0), Lemon = numeric(0))
+
+
+for(i in 1:10)
+{
+  print(paste0("Split Number", i))
+  
+  indexes = sample(1:nrow(fruit), size=0.25*nrow(fruit))
+  # Split data
+  test = fruit[indexes,]
+  train = fruit[-indexes,]
+  
+  
+  nb_model <- naiveBayes(as.factor(Type) ~., data = train)
+  pred <- predict(nb_model, test)
+  
+  confMat <- table(pred,test$Type)
+  accuracy <- sum(diag(confMat))/sum(confMat)
+  print(paste0('Accuracy: ',round(accuracy,2)))
+  
+  c_acc_6 <- c(c_acc_6, accuracy)
+  
+  c_mat <- confusionMatrix(confMat)
+  
+  df_6 <- as.data.frame(c_mat$byClass) 
+  print("Sensitivity by each class(Apple,Orange,Lemon)")
+  print(df_6$Sensitivity)
+  
+  df_sen <- rbind(df_sen, df_6$Sensitivity)
+  
+  print("Specificity by each class(Apple,Orange,Lemon)")
+  print(df_6$Specificity)
+  
+  df_spe <- rbind(df_spe, df_6$Specificity)
+  
+  print("____________________________")
+}
+
+print(paste0('Average Accuracy: ',round(sum(c_acc_6)/length(c_acc_6),2)))
+colnames(df_sen) <- c("Apple","orange","Lemon")
+colnames(df_spe) <- c("Apple","orange","Lemon")
+
+print("Average Sensitivity:")
+print(colMeans(df_sen))
+print("Average Specificity:")
+print(colMeans(df_spe))
+```
