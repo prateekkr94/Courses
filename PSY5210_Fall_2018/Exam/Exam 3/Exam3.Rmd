@@ -1,0 +1,343 @@
+---
+title: "Exam 3 (Solution)"
+author: "Prateek Kumar prateekk@mtu.edu"
+date: "December 18, 2018"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exam 3: Where's Waldo
+
+The data set includes an experiment with 120 participants, each of whom completed 45 repeated measurements of a visual search task across a number of conditions. 
+In this task, they were shown a target, and then asked to find the target in a complex screen. Sometimes the target would be in that screen, and other times it would not (the 'type' column).  They would first determine if the target was there or not, and then click on the target.  There were a number of different targets (probeFile) and different screens (baseimage).  
+Also we could measure the overall size of the target (size) in pixels, and centrality, in pixels from the center of the screen. We measured overall time to find the target (responsetime), and whether their response was correct (corr) for each trial. 
+
+```{r}
+##recode the factors that look like numbers
+data <- read.csv("training-pooled.csv") #reading the csv file
+#head(data) #displaying the top few rows of the data
+
+# converting subnum, probeCond and probe into factors because 
+data$subnum <- as.factor(data$subnum)
+data$probeCond <- as.factor(data$probeCond)
+data$probe <- as.factor(data$probe)
+```
+
+We read the datatset("training-pooled.csv") and we converted subnum, probeCond and probe into factors because factors represent a very efficient way to store character values, because each unique character value is stored only once.
+
+# 1 Identifying outliers and influential points and transforming dependent measure
+
+To begin, we want to use response time as the dependent measure.
+```{r}
+par(mfrow=c(1,2))
+
+library(rcompanion)
+plotNormalHistogram(data$responsetime, breaks = 20, col = "gold", border = 1,
+                    main = "Histogram of Response Time", xlab = "Response Time")
+
+qqnorm(data$responsetime)
+qqline(data$responsetime, col = 2)
+```
+
+However, we suspect that it is non-normal. The histogram shows that the data is right skewed i.e. we have positive skewness so inorder to normalize it we will use log transform.
+
+```{r}
+RT_log = log(data$responsetime) #log transform
+par(mfrow=c(1,2))
+plotNormalHistogram(RT_log, breaks = 20, col = "gold", border = 1,
+                    main = "Histogram of Response Time", xlab = "Response Time")
+
+qqnorm(RT_log)
+qqline(RT_log, col = 2)
+```
+
+Now our data is normalized as we can see in the histogram but looking at the qqnorm plot we can suspect some highly influential outliers so we need to remove them beause those values are distant from remaining observations. As a result, they can potentially skew or bias our analysis performed on the dataset. It is therefore very important to detect and adequately deal with outliers.
+
+```{r}
+#adding the value to the data frame
+data$responsetime_log <- RT_log
+
+#Detecting outliers overall, univariate approach
+outlier_values <- boxplot.stats(data$responsetime_log)$out  # outlier values.
+boxplot(data$responsetime_log, main="Response Time Boxplot", boxwex=0.5, horizontal = T, xlab = "Response Time")
+#mtext(paste("Outliers: ", paste(outlier_values, collapse=", ")), cex=0.6)
+```
+
+Firstly we check for the overall outliers. On looking at the box plot we see the outlier points which are outside the whiskers of the boxplot which is the 1.5 times the IQR.
+
+```{r}
+#converting the outliers to NA values
+while(length(outlier_values)!=0){
+  outlier_values <- boxplot.stats(data$responsetime_log)$out
+  i=j=0
+  for(i in data$responsetime_log){
+    j=j+1
+    if(i %in% outlier_values){
+      data$responsetime_log[j] <- NA
+    }
+  }}
+
+boxplot(data$responsetime_log, main="Response Time boxplot", boxwex=0.5, horizontal = T, xlab = "Response Time")
+```
+
+Now, we removed the overall outliers and we can see the changes in our boxplot. Now we don't have any points outside the whiskers of the boxplot.
+
+Now we need to check for the outliers for each baseimage condition as well.
+```{r}
+#Detecting outliers for each baseimage condition, bivariate approach
+#boxplot(RT_log ~ baseImage, data = data, main="Response Time across baseimage condition")  # clear pattern is noticeable.
+library(ggplot2)
+ggplot(data, aes(x = baseImage, y = responsetime_log, color = baseImage)) + geom_boxplot() + 
+  labs(title="Response Time across baseimage condition",x = "baseImage", y = "Response Time(log)")
+```
+
+Using the bivariate approach we can see that we have outliers in the "i294" and "i9" baseimage conditions.
+
+```{r}
+#We see we have outliers in i294 and i9 so removing their outliers
+#i264
+data_i294 <- data[data$baseImage %in% c("i294"), ]
+outlier_values <- boxplot.stats(data_i294$responsetime_log)$out
+while(length(outlier_values)!=0){
+  data_i294 <- data[data$baseImage %in% c("i294"), ]
+  outlier_values <- boxplot.stats(data_i294$responsetime_log)$out
+  i=j=0
+  for(i in data$responsetime_log){
+    j=j+1
+    if(data$baseImage[j] %in% c("i294")){
+      if(i %in% outlier_values){
+        data$responsetime_log[j] <- NA
+      }}
+  }}
+
+#i9
+data_i9 <- data[data$baseImage %in% c("i9"), ]
+outlier_values <- boxplot.stats(data_i9$responsetime_log)$out
+while(length(outlier_values)!=0){
+  data_i9 <- data[data$baseImage %in% c("i9"), ]
+  outlier_values <- boxplot.stats(data_i9$responsetime_log)$out
+  i=j=0
+  for(i in data$responsetime_log){
+    j=j+1
+    if(data$baseImage[j] %in% c("i9")){
+      if(i %in% outlier_values){
+        data$responsetime_log[j] <- NA
+      }}
+  }}
+
+ggplot(data, aes(x = baseImage, y = responsetime_log, color = baseImage)) + geom_boxplot() + 
+  labs(title="Response Time across baseimage condition",x = "baseImage", y = "Response Time(log)")
+```
+
+We now removed the outliers with respect to each baseImage condition as well. Now again we can see that we do not have any points outside the whiskers.
+
+So now we are free from the outliers.Check the histogram and the qqnorm plots again.
+
+```{r}
+#After removing all the outliers
+par(mfrow=c(1,2))
+plotNormalHistogram(data$responsetime_log, breaks = 20, col = "gold", border = 1,
+                    main = "Histogram of Response Time", xlab = "Response Time")
+
+qqnorm(data$responsetime_log)
+qqline(data$responsetime_log, col = 2)
+```
+
+We can now see from the histogram that our data is properly normalized and our normal qq plot confirms it.
+
+```{r}
+#replacing NA with mean
+i=j=0
+for(i in data$responsetime_log){
+  j=j+1
+  if(is.na(i)==T){
+    data$responsetime_log[j] <- mean(data$responsetime_log, na.rm = T)
+  }
+}
+
+#After removing all the NA values
+par(mfrow=c(1,2))
+plotNormalHistogram(data$responsetime_log, breaks = 20, col = "gold", border = 1,
+                    main = "Histogram of Response Time", xlab = "Response Time")
+
+qqnorm(data$responsetime_log)
+qqline(data$responsetime_log, col = 2)
+```
+
+# 2. ANOVA for base image condition
+For this question,  we have to pretend that we did not have repeated measures (ignoring the subnum variable).
+We build our anova model with the transformed Response Time as a dependent measure.
+
+Here we are considering only the correct responses so we have to get rid of the values who have the correlation value as 0.
+
+```{r}
+#Finding the columns which are of factor type
+sapply(data, class) == "factor"
+
+#For each of the factors, recoding with polynomial contrasts inorder to examine interactions.
+#contrasts(data$subnum) <- contr.poly(levels(data$subnum))
+contrasts(data$baseImage) <- contr.poly(levels(data$baseImage))
+contrasts(data$type) <- contr.poly(levels(data$type))
+contrasts(data$probeCond) <- contr.poly(levels(data$probeCond))
+contrasts(data$probe) <- contr.poly(levels(data$probe))
+contrasts(data$probeFile) <- contr.poly(levels(data$probeFile))
+
+#filtering out those whose corr values is 0.
+data_Q2 <- data[data$corr %in% c(1), ]
+```
+
+We firstly for each of the factors, recoded with polynomial contrasts so that we can examine interactions.
+Now including baseimage, type, and a baseImage x type interaction, and size and centrality as numerical covariates we build our model.
+
+```{r}
+m_01 <- aov(responsetime_log ~ baseImage + type + baseImage:type + size + Centrality, data = data_Q2)
+summary(m_01)
+```
+
+We now use a type-II ANOVA to determine which variables are significant.
+```{r}
+library(car)
+Anova(m_01)
+#This shows that base image is not significant and size is just over significant value
+```
+
+On looking at the results of Type-II Anova and examining the p-values we see that only the centrality and baseImage and type interaction are significant with the p-values < 0.05
+
+Now we conduct Type-III Anova on the model.
+
+```{r}
+Anova(m_01, type = "III")
+```
+
+
+Also on conducting a type-III ANOVA, we get the same result i.e. centrality and type x baseimage interaction is only significant.
+
+For the Type-II model we now compute post-hoc test for baseImage and the baseimage by type interaction to determine which levels differed from each other.
+
+```{r}
+#For the Type-II model, compute post-hoc tests for baseImage and the baseimage by type interaction to determine which levels differed from eachother
+TukeyHSD(aov(responsetime_log ~ baseImage + baseImage:type, data = data_Q2))
+```
+
+We did TukeyHSD test and see that for all the three baseImages(i264, i294 and i9) the p-value is significant for each of the three. And then checking for each baseImage and type interaction we see that the p-value is significant for all except for i264:PRESENT-i264:ABSENT, i264:PRESENT-i294:ABSENT and i294:PRESENT-i294:ABSENT interactions.
+  
+Now, checking with the overall effect sizes of the model
+```{r}
+#Report the post-hoc tests, and the overall effect sizes
+library(sjstats) 
+anova_stats(m_01)
+```
+
+Above we have the effect size values for each of the predictors and the interaction used to build the model. These values are useful beyond significance tests (p-values), because they estimate the magnitude of effects, independent from sample size.
+
+1. Looking at the p-values we see that all the variables are significant except for type.
+2. The etasq values give the variablity accounted by each of the variables, it can be interpreted as the percentage of the percentage of variance accounted by each. We see that baseImage accounts for the highest variablity in the model which is 2.7%
+3. Partial etasq value strongly depends on the variablity of the residuals, that is also highest for baseImage
+4. Omegasq and Partial Omegasq values are also highest for baseImage.
+
+On examining the above result we see that all of our predictors are significant except for the type because we get variance as 0 for that predictor.
+ 
+
+```{r} 
+m_01
+```
+Now we calculate the overall variance of the model. We use the sum of Squares value inorder to do that.
+```{r} 
+#overall proportion of variance being predicted by this model, sum of sq
+R_sq = (24.8658 + 0.0975 + 1.3920 + 6.9058 + 2.7691)/(24.8658 + 0.0975 + 1.3920 + 6.9058 + 2.7691 + 884.6366)
+R_sq
+```
+
+The overall proportion of variance being predicted by this model can be calculated directly from the sum-of-squares in the ANOVA model. We see that the model accounts for 4% of variance.
+So we can say that the model is not good because it accounts for a very low variance.
+
+
+# 3. Repeated Measures
+Now, we incorporated subject number(subnum) as a randomized factor, specifying error strata with Error(subnum/(baseImage*type)).
+
+```{r}
+#For each of the factors, recoding with helmert contrasts inorder to examine interactions.
+contrasts(data$subnum) <- contr.helmert(levels(data$subnum))
+contrasts(data$baseImage) <- contr.helmert(levels(data$baseImage))
+contrasts(data$type) <- contr.helmert(levels(data$type))
+contrasts(data$probeCond) <- contr.helmert(levels(data$probeCond))
+contrasts(data$probe) <- contr.helmert(levels(data$probe))
+contrasts(data$probeFile) <- contr.helmert(levels(data$probeFile))
+```
+
+Now for each of the factors, I recoded with helmert contrasts so that we can examine interactions.
+
+```{r}
+m_02 <- aov(responsetime_log ~ baseImage + type + baseImage*type + size + Centrality + Error(subnum/(baseImage*type)), data = data)
+summary(m_02)
+```
+
+To test the effect of the condition, in each case we look at the subnum:baseImage:type error strata. We get the significant p-value as its less than 0.05
+
+Consequently, for true repetition of conditions, this error strata scheme will properly ignore repetitions within subject in the test, because we care about generalizing across the mean and we don't see an effect, we shouldn't get a huge benefit if we simply decide to measure response time multiple times per subject.
+
+```{r}
+library(sjstats) 
+#anova_stats(m_02)
+eta_sq(m_02)
+```
+
+We see from the above results the etasq value accounted for each predictor and the interaction. We see that the subnum stratum accounts for the highest variance in the model which is 17.2%. Also the subnum and baseImage interaction stratum accounts for the next highest variance which is 4.4%
+
+# 4. EzANOVA
+We now use an ezANOVA to build the same model as above, excluding the size and centrality variables if the model won't incorporate continuous predictors. 
+```{r}
+library(ez)
+
+mod.ez <- ezANOVA(data = data,
+                  dv = .(responsetime_log), 
+                  wid = .(subnum),
+                  within = .(baseImage, type),
+                  detailed = T,
+                  return_aov = T)
+
+mod.ez
+```
+
+Focusing on the Mauchly's test inorder to check the sphericity, we see that the test is not significant because the p-value is greater that 0.05.
+
+In the cases above, GGe and HFE are both close to 1.0, so there is no large adjustment. We can then report the p-value from the corrections lines - in this case they differ.
+
+##Make table
+
+
+# 5. Mixed-effects model
+Finally, we use nlme(lme) to build the same model as a mixed effects model, treating subject as a randomized factor.
+
+Creating the first model same as done in the previous question.
+```{r}
+#First Model
+library(lme4)
+lmer <- lmer(responsetime_log ~ baseImage + type + baseImage*type + (1|subnum) ,data = data)
+```
+
+Creating the second model without the interaction term.
+```{r}
+#Second Model Without Interaction
+lmer2 <- lmer(responsetime_log ~ baseImage + type + (1|subnum) ,data = data)
+```
+
+Comparing the two models with an anova()
+```{r}
+anova(lmer2, lmer)
+```
+
+We would here prefer the second model which does not include the interaction term. We confirmed this based upon the AIC and BIC value because the more negative the value the better the model.
+
+```{r}
+library(nlme)
+am <- lme(responsetime_log ~ baseImage + type + baseImage*type, random = (~1|subnum), data = data)
+am2 <- lme(responsetime_log ~ baseImage + type, random = (~1|subnum), data = data)
+anova(am, am2)
+```
+
+When we use lme4 (lmer) to build the same model we again see that the model without the interaction is better with low AIC and BIC value as compared to the other model.
