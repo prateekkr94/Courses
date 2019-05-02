@@ -1,0 +1,333 @@
+---
+title: "PS7"
+author: "Prateek Kumar"
+date: "28 October 2018"
+output: word_document
+---
+
+Problem 1: Predicting a categorical variable
+```{r}
+
+library(plotrix)
+library(faraway)
+
+kanga_final <- kanga[!is.na(rowSums(kanga[,3:20])),]
+
+sex_data <- as.numeric(kanga_final$sex)
+
+#kanga_male<-subset(kanga_final, kanga_final$sex == "Male")
+#kanga_female<-subset(kanga_final, kanga_final$sex == "Female")
+
+#colnames(kanga_final)
+var_comb <- kanga_final$basilar.length+kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$palate.width+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$squamosal.depth+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$.rostral.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$mandible.depth+kanga_final$ramus.height
+
+model_kanga_kanga <- lm(sex_data ~ var_comb, data=kanga_final)
+
+summary_kanga<-summary(model_kanga_kanga)
+summary_kanga
+
+#plot(var_comb,sex_data,xlab="", ylab="Sum of Linear Variables", pch=19, col="blue")
+#abline(lm(sex_data ~ var_comb, data=kanga_final), col="red")
+
+#predict_val<-round(predict(model_kanga_kanga))
+#predict_val
+
+#sex_data
+
+plot(model_kanga$fit~kanga_final$sex, xlab="Gender",ylab =" Gender coefficient ")
+points(sex_data,model_kanga$fit )
+abline(1.5 ,0 , lwd =3)
+predictedgender <- model_kanga $ fit > 1.5
+sex_tab <- table (sex_data ,c("Female","Male")[( predictedgender +1) ])
+sex_tab
+val <- (sex_tab[1,1]+sex_tab[2,2]) / (sex_tab[1,1]+sex_tab[1,2]+sex_tab[2,1]+sex_tab[2,2])*100
+
+print(paste("Accuracy =", round(val,2),"%"))
+```
+
+Problem 2: Selecting variables
+
+```{r}
+library(faraway)
+
+kanga_final <- kanga[!is.na(rowSums(kanga[,3:20])),]
+sex_data <- as.numeric(kanga_final$sex)
+
+lm1 <- lm(sex_data~kanga_final$basilar.length+kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$palate.width+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$squamosal.depth+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$.rostral.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$mandible.depth+kanga_final$ramus.height,data=kanga_final)
+summary(lm1)
+val1 <- drop1(lm1,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+#squamosal.depth
+
+lm2 <- lm(sex_data~kanga_final$basilar.length+kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$palate.width+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$.rostral.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$mandible.depth+kanga_final$ramus.height,data=kanga_final)
+summary(lm2)
+val1 <- drop1(lm2,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm1,lm2)
+
+#squamosal.depth | palate.width
+
+lm3 <- lm(sex_data~kanga_final$basilar.length+kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$.rostral.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$mandible.depth+kanga_final$ramus.height,data=kanga_final)
+summary(lm2)
+val1 <- drop1(lm3,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm2,lm3)
+anova(lm1,lm3)
+
+#squamosal.depth | palate.width | basilar.length
+
+lm4 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$.rostral.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$mandible.depth+kanga_final$ramus.height,data=kanga_final)
+summary(lm4)
+val1 <- drop1(lm4,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm3,lm4)
+anova(lm1,lm4)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth
+
+lm5 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$.rostral.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$ramus.height,data=kanga_final)
+summary(lm5)
+val1 <- drop1(lm5,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm4,lm5)
+anova(lm1,lm5)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width
+
+lm6 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$ramus.height,data=kanga_final)
+summary(lm6)
+val1 <- drop1(lm6,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm5,lm6)
+anova(lm1,lm6)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth
+
+lm7 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$ramus.height,data=kanga_final)
+summary(lm7)
+val1 <- drop1(lm7,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm6,lm7)
+anova(lm1,lm7)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | foramina.length
+
+lm8 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$crest.width+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$ramus.height,data=kanga_final)
+summary(lm8)
+val1 <- drop1(lm8,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm7,lm8)
+anova(lm1,lm8)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | foramina.length | zygomatic.width
+
+lm9 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$orbital.width+kanga_final$crest.width+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$ramus.height,data=kanga_final)
+summary(lm9)
+val1 <- drop1(lm9,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm8,lm9)
+anova(lm1,lm9)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | 
+#foramina.length | zygomatic.width | ramus.height
+
+lm10 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$orbital.width+kanga_final$crest.width+kanga_final$mandible.length+kanga_final$mandible.width,data=kanga_final)
+summary(lm10)
+val1 <- drop1(lm10,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm9,lm10)
+anova(lm1,lm10)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | 
+#foramina.length | zygomatic.width | ramus.height | palate.length
+
+lm11 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$orbital.width+kanga_final$crest.width+kanga_final$mandible.length+kanga_final$mandible.width,data=kanga_final)
+summary(lm11)
+val1 <- drop1(lm11,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm10,lm11)
+anova(lm1,lm11)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | 
+#foramina.length | zygomatic.width | ramus.height | palate.length | mandible.length
+
+lm12 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$orbital.width+kanga_final$crest.width+kanga_final$mandible.width,data=kanga_final)
+summary(lm12)
+val1 <- drop1(lm12,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm11,lm12)
+anova(lm1,lm12)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | 
+#foramina.length | zygomatic.width | ramus.height | palate.length | mandible.length | mandible.width
+
+lm13 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$orbital.width+kanga_final$crest.width,data=kanga_final)
+summary(lm13)
+val1 <- drop1(lm13,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm12,lm13)
+anova(lm1,lm13)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | 
+#foramina.length | zygomatic.width | ramus.height | palate.length | mandible.length | mandible.width
+#orbital.width
+
+lm14 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width+kanga_final$crest.width,data=kanga_final)
+summary(lm14)
+val1 <- drop1(lm14,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm13,lm14)
+anova(lm1,lm14)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | 
+#foramina.length | zygomatic.width | ramus.height | palate.length | mandible.length | mandible.width
+#orbital.width | crest.width
+
+lm15 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$lacrymal.width,data=kanga_final)
+summary(lm15)
+val1 <- drop1(lm15,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm14,lm15)
+anova(lm1,lm15)
+
+#squamosal.depth | palate.width | basilar.length | mandible.depth | .rostral.width | occipital.depth | 
+#foramina.length | zygomatic.width | ramus.height | palate.length | mandible.length | mandible.width
+#orbital.width | crest.width | nasal.width
+
+lm16 <- lm(sex_data~kanga_final$occipitonasal.length+kanga_final$nasal.length+kanga_final$lacrymal.width,data=kanga_final)
+summary(lm16)
+val1 <- drop1(lm16,test="F")
+val1
+max(val1$`Pr(>F)`, na.rm = T)
+
+anova(lm15,lm16)
+anova(lm1,lm16)
+
+####################### AIC #############################
+
+##Score AIC for each model:
+data.frame(model=paste("lm",1:16,sep=""),
+           rbind(extractAIC(lm1),
+                 extractAIC(lm2),
+                 extractAIC(lm3),
+                 extractAIC(lm4),
+                 extractAIC(lm5),
+                 extractAIC(lm6),
+                 extractAIC(lm7),
+                 extractAIC(lm8),
+                 extractAIC(lm9),
+                 extractAIC(lm10),
+                 extractAIC(lm11),
+                 extractAIC(lm12),
+                 extractAIC(lm13),
+                 extractAIC(lm14),
+                 extractAIC(lm15),
+                 extractAIC(lm16)))
+
+####################### Bayesfactor Regression #############################
+
+library(BayesFactor)
+
+kanga_final$sex <- as.numeric(kanga_final$sex)
+
+bmodel <- regressionBF(sex~occipitonasal.length+palate.length+nasal.length+nasal.width+lacrymal.width+orbital.width+crest.width+mandible.length+mandible.width,data=kanga_final)
+
+plot(head(bmodel))   
+head(bmodel)
+
+
+####################### Step function #############################
+
+gsmall <- step(lm1,direction="both", k=log(nrow(dat)))
+summary(gsmall)
+
+
+```
+
+Problem 3. Predicting missing data
+
+```{r}
+library(faraway)
+
+kanga <- faraway::kanga
+old1 <- kanga$palate.width
+
+lm1 <- lm(kanga$palate.width~kanga$basilar.length+kanga$occipitonasal.length+kanga$palate.length+kanga$nasal.length+kanga$nasal.width+kanga$squamosal.depth+kanga$lacrymal.width+kanga$zygomatic.width+kanga$orbital.width+kanga$.rostral.width+kanga$occipital.depth+kanga$crest.width+kanga$foramina.length+kanga$mandible.length+kanga$mandible.width+kanga$mandible.depth+kanga$ramus.height,data=kanga)
+summary(lm1)
+
+#orbital.width|occipitonasal.length|foramina.length
+
+gsmall <- step(lm1,direction="both", k=log(nrow(dat)))
+summary(gsmall)
+
+lm_f <- lm(kanga$palate.width~kanga$basilar.length+kanga$palate.length+kanga$nasal.length+kanga$nasal.width+kanga$squamosal.depth+kanga$lacrymal.width+kanga$zygomatic.width+kanga$.rostral.width+kanga$occipital.depth+kanga$crest.width+kanga$mandible.length+kanga$mandible.width+kanga$mandible.depth+kanga$ramus.height,data=kanga)
+summary(lm_f)
+
+#checking missing values
+missing <- kanga[is.na(kanga$palate.width),]
+#View(missing)
+
+newpred <- round(predict(lm_f,missing))
+
+#inputting data
+kanga$palate.width[is.na(kanga$palate.width)] <- newpred
+new_pw <- kanga$palate.width
+#################### Predicting sex ####################
+
+kanga_new <- do.call(rbind, Map(data.frame, A=old1, B=new_pw, C=kanga$sex))
+
+#################################
+
+#kanga_final <- kanga[!is.na(rowSums(kanga[,3:20])),]
+
+kanga_final <- kanga
+
+sex_data <- as.numeric(kanga_final$sex)
+
+var_comb <- kanga_final$basilar.length+kanga_final$occipitonasal.length+kanga_final$palate.length+kanga_final$palate.width+kanga_final$nasal.length+kanga_final$nasal.width+kanga_final$squamosal.depth+kanga_final$lacrymal.width+kanga_final$zygomatic.width+kanga_final$orbital.width+kanga_final$.rostral.width+kanga_final$occipital.depth+kanga_final$crest.width+kanga_final$foramina.length+kanga_final$mandible.length+kanga_final$mandible.width+kanga_final$mandible.depth+kanga_final$ramus.height
+
+model_kanga_kanga <- lm(sex_data ~ var_comb, data=kanga_final)
+
+summary_kanga<-summary(model_kanga_kanga)
+summary_kanga
+
+plot(model_kanga$fit~kanga_final$sex, xlab="Gender",ylab =" Gender coefficient ")
+points(sex_data,model_kanga$fit )
+abline(1.5 ,0 , lwd =3)
+predictedgender <- model_kanga $ fit > 1.5
+sex_tab <- table (sex_data ,c("Female","Male")[( predictedgender +1) ])
+val <- (sex_tab[1,1]+sex_tab[2,2]) / (sex_tab[1,1]+sex_tab[1,2]+sex_tab[2,1]+sex_tab[2,2])*100
+
+print(paste("Accuracy =", round(val,2),"%"))
+
+```
