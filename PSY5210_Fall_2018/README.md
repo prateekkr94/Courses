@@ -1,5 +1,5 @@
-# PSY5210_Fall_2018
-This material was developed By Shane Mueller for PSY 5210 (Advanced Statistical Analysis and Design 1), an statistical analysis course for the Applied Cognitive Science and Human Factors program at Michigan Technological University and the problem set solutions are by Prateek Kumar.
+# PSY5210 Advanced Statistical Analysis and Design 1
+This material was developed By Shane Mueller for PSY 5210 , an statistical analysis course for the Applied Cognitive Science and Human Factors program at Michigan Technological University and the problem set solutions are by Prateek Kumar.
 
 The final reports are in .pdf or .docx format in each folder.
 
